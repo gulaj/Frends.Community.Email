@@ -1,5 +1,5 @@
 # Frends.Community.Email
-Frends task for sending emails
+Frends task for sending emails. Task sends emails via SMTP protocol and can handle attachments either from file or as raw string input.
 
 - [Installing](#installing)
 - [Tasks](#tasks)
