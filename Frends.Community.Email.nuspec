@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>Frends.Community.Email</id>
+        <version>1.0.0</version>
+        <title>FRENDS email tasks</title>
+        <authors>HiQ Finland</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>FRENDS email tasks</description>
+        <summary />
+        <dependencies>
+            <dependency id="Frends.Tasks.Attributes" version="1.2.0" />
+        </dependencies>
+        <frameworkAssemblies>
+            <frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework="" />
+            <frameworkAssembly assemblyName="System" targetFramework="" />
+            <frameworkAssembly assemblyName="System.IO" targetFramework="" />
+            <frameworkAssembly assemblyName="System.Collections.Generic" targetFramework="" />
+            <frameworkAssembly assemblyName="System.Net." targetFramework="" />
+            <frameworkAssembly assemblyName="System.Net.Mail" targetFramework="" />
+            <frameworkAssembly assemblyName="System.Threading" targetFramework="" />
+            <frameworkAssembly assemblyName="System.Threading.Tasks" targetFramework="" />
+            <frameworkAssembly assemblyName="System.ComponentModel" targetFramework="" />
+        </frameworkAssemblies>
+    </metadata>
+    <files>
+      <file src="\Frends.Community.Email\bin\release\Frends.Community.Email.dll" target="lib\net452\Frends.Community.Email.dll" />
+      <file src="\Frends.Community.Email\bin\release\Frends.Community.Email.xml" target="lib\net452\Frends.Community.Email.xml" />
+      <file src="FrendsTaskMetadata.json" target="FrendsTaskMetadata.json"/>
+    </files>
+</package>
