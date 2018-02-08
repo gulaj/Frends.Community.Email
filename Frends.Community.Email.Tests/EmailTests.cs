@@ -5,7 +5,7 @@ using System.IO;
 namespace Frends.Community.Email.Tests
 {   
      /// <summary>
-     /// NOTE: To run these unit test, you need a SMTP test server. Fill in the properties below with your values.
+     /// NOTE: To run these unit tests, you need an SMTP test server. Fill in the properties below with your values.
      /// </summary>
     [TestFixture]
     public class EmailTests
@@ -79,7 +79,7 @@ namespace Frends.Community.Email.Tests
             input.Subject = "Email test - PlainText";
             
             var result = EmailTask.SendEmail(input, null, _options, new System.Threading.CancellationToken());
-            Assert.IsTrue(result.Result.EmailSent);
+            Assert.IsTrue(result.EmailSent);
         }
 
         [Test]
@@ -99,7 +99,7 @@ namespace Frends.Community.Email.Tests
             var Attachments = new Attachment[] { attachment };
 
             var result = EmailTask.SendEmail(input, Attachments, _options, new System.Threading.CancellationToken());
-            Assert.IsTrue(result.Result.EmailSent);
+            Assert.IsTrue(result.EmailSent);
         }
 
         [Test]
@@ -116,7 +116,7 @@ namespace Frends.Community.Email.Tests
             var Attachments = new Attachment[] { attachment};
 
             var result = EmailTask.SendEmail(input, Attachments, _options, new System.Threading.CancellationToken());
-            Assert.IsTrue(result.Result.EmailSent);
+            Assert.IsTrue(result.EmailSent);
         }
 
         [Test]
@@ -136,7 +136,7 @@ namespace Frends.Community.Email.Tests
             var Attachments = new Attachment[] { attachment };
 
             var result = EmailTask.SendEmail(input, Attachments, _options, new System.Threading.CancellationToken());
-            Assert.IsFalse(result.Result.EmailSent);
+            Assert.IsFalse(result.EmailSent);
         }
 
         [Test]
@@ -155,7 +155,7 @@ namespace Frends.Community.Email.Tests
 
             var Attachments = new Attachment[] { attachment };
 
-            Assert.ThrowsAsync<FileNotFoundException> (async () => await EmailTask.SendEmail(input, Attachments, _options, new System.Threading.CancellationToken()));
+            Assert.Throws<FileNotFoundException>(() => EmailTask.SendEmail(input, Attachments, _options, new System.Threading.CancellationToken()));
             
         }
     }
