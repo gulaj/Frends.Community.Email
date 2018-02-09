@@ -17,12 +17,12 @@ namespace Frends.Community.Email
     public class EmailTask
     {
         /// <summary>
-        /// Sends email message with optional attachments. See https://github.com/CommunityHiQ/Frends.Community.Sftp
+        /// Sends email message with optional attachments. See https://github.com/CommunityHiQ/Frends.Community.Email
         /// </summary>
         /// <returns>
         /// Object { bool EmailSent, string StatusString }
         /// </returns>
-        public static async Task<Output> SendEmail([CustomDisplay(DisplayOption.Tab)]Input message, [CustomDisplay(DisplayOption.Tab)]Attachment[] attachments, [CustomDisplay(DisplayOption.Tab)]Options SMTPSettings, CancellationToken cancellationToken)
+        public static Output SendEmail([CustomDisplay(DisplayOption.Tab)]Input message, [CustomDisplay(DisplayOption.Tab)]Attachment[] attachments, [CustomDisplay(DisplayOption.Tab)]Options SMTPSettings, CancellationToken cancellationToken)
         {
             var output = new Output();
 
@@ -64,7 +64,7 @@ namespace Frends.Community.Email
                     
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    await client.SendMailAsync(mail);                 
+                    client.Send(mail);                 
 
                     output.EmailSent = true;
                     output.StatusString = string.Format("Email sent to: {0}", mail.To.ToString());
