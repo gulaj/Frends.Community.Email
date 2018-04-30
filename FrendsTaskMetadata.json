@@ -2,6 +2,9 @@
   "Tasks": [
     {
       "TaskMethod": "Frends.Community.Email.EmailTask.SendEmail"
+    },
+    {
+      "TaskMethod": "Frends.Community.Email.ReadEmailTask.ReadEmail"
     }
   ]
 }

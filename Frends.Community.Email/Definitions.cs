@@ -1,5 +1,5 @@
-﻿using Frends.Tasks.Attributes;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 #pragma warning disable 1591
 
@@ -82,7 +82,7 @@ namespace Frends.Community.Email
         /// Use this username to log in to the SMTP server
         /// </summary>
         [DefaultValue("\"\"")]
-        [ConditionalDisplay(nameof(UseWindowsAuthentication), false)]
+        [UIHint(nameof(UseWindowsAuthentication), "", false)]
         public string UserName { get; set; }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace Frends.Community.Email
         /// </summary>
         [PasswordPropertyText(true)]
         [DefaultValue("\"\"")]
-        [ConditionalDisplay(nameof(UseWindowsAuthentication), false)]
+        [UIHint(nameof(UseWindowsAuthentication), "", false)]
         public string Password { get; set; }
     }
 
@@ -113,24 +113,28 @@ namespace Frends.Community.Email
         /// Chooses if the attachment file is created from a string or copied from disk.
         /// </summary>
         public AttachmentType AttachmentType { get; set; }
-        [ConditionalDisplay(nameof(AttachmentType), AttachmentType.AttachmentFromString)]
+
+        [UIHint(nameof(AttachmentType), "", AttachmentType.AttachmentFromString)]
         public AttachmentFromString stringAttachment { get; set; }
+
         /// <summary>
         /// Attachment file's path. Uses Directory.GetFiles(string, string) as a pattern matching technique. See https://msdn.microsoft.com/en-us/library/wz42302f(v=vs.110).aspx.
         /// Exception: If the path ends in a directory, all files in that folder are added as attachments.
         /// </summary>
         [DefaultValue("\"\"")]
-        [ConditionalDisplay(nameof(AttachmentType), AttachmentType.FileAttachment)]
+        [UIHint(nameof(AttachmentType), "", AttachmentType.FileAttachment)]
         public string FilePath { get; set; }
+
         /// <summary>
         /// If set true and no files match the given path, an exception is thrown.
         /// </summary>
-        [ConditionalDisplay(nameof(AttachmentType), AttachmentType.FileAttachment)]
+        [UIHint(nameof(AttachmentType), "", AttachmentType.FileAttachment)]
         public bool ThrowExceptionIfAttachmentNotFound { get; set; }
+
         /// <summary>
         /// If set true and no files match the given path, email will be sent nevertheless.
         /// </summary>
-        [ConditionalDisplay(nameof(AttachmentType), AttachmentType.FileAttachment)]
+        [UIHint(nameof(AttachmentType), "", AttachmentType.FileAttachment)]
         public bool SendIfNoAttachmentsFound { get; set; }
     }
     public enum AttachmentType
@@ -139,6 +143,7 @@ namespace Frends.Community.Email
         /// Select this if the attachment is a file.
         /// </summary>
         FileAttachment,
+
         /// <summary>
         /// Select this if the attachment file should be created from a string.
         /// </summary>
@@ -152,6 +157,7 @@ namespace Frends.Community.Email
         /// </summary>
         [DefaultValue("\"\"")]
         public string FileContent { get; set; }
+
         /// <summary>
         /// Name of the attachment file
         /// </summary>

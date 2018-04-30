@@ -1,11 +1,9 @@
 ﻿using System.IO;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Net;
 using System.Net.Mail;
 using System.Threading;
-using System.Threading.Tasks;
-using System.ComponentModel;
-using Frends.Tasks.Attributes;
 using System;
 using System.Text;
 
@@ -22,7 +20,7 @@ namespace Frends.Community.Email
         /// <returns>
         /// Object { bool EmailSent, string StatusString }
         /// </returns>
-        public static Output SendEmail([CustomDisplay(DisplayOption.Tab)]Input message, [CustomDisplay(DisplayOption.Tab)]Attachment[] attachments, [CustomDisplay(DisplayOption.Tab)]Options SMTPSettings, CancellationToken cancellationToken)
+        public static Output SendEmail([PropertyTab]Input message, [PropertyTab]Attachment[] attachments, [PropertyTab]Options SMTPSettings, CancellationToken cancellationToken)
         {
             var output = new Output();
 
