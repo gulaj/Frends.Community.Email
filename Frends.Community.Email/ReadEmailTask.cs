@@ -30,7 +30,8 @@ namespace Frends.Community.Email
         /// string From.
         /// DateTime Date.
         /// string Title.
-        /// string Body.
+        /// string BodyText.
+        /// string BodyHtml.
         /// }
         /// </returns>
         public static List<EmailMessageResult> ReadEmail([PropertyTab]ReadEmailSettings settings, [PropertyTab]ReadEmailOptions options)
@@ -48,9 +49,10 @@ namespace Frends.Community.Email
         }
 
         /// <summary>
-        /// NOT TESTED
+        /// Read emails from IMAP server
         /// </summary>
-        /// <param name="settings"></param>
+        /// <param name="settings">IMAP server settings</param>
+        /// <param name="options">Email options</param>
         public static List<EmailMessageResult> ReadEmailWithIMAP(ServerSettings settings, ReadEmailOptions options)
         {
             var result = new List<EmailMessageResult>();
@@ -77,8 +79,9 @@ namespace Frends.Community.Email
                     {
                         Id = msg.MessageId,
                         Date = msg.Date.DateTime,
-                        Title = msg.Subject,
-                        Body = msg.Body.ToString(),
+                        Subject = msg.Subject,
+                        BodyText = msg.TextBody,
+                        BodyHtml = msg.HtmlBody,
                         From = string.Join(",", msg.From.Select(j => j.ToString())),
                         To = string.Join(",", msg.To.Select(j => j.ToString())),
                         Cc = string.Join(",", msg.Cc.Select(j => j.ToString()))
@@ -135,8 +138,11 @@ namespace Frends.Community.Email
             // get email items
             List<EmailMessage> emails = exchangeResults.Where(msg => msg is EmailMessage).Cast<EmailMessage>().ToList();
 
-            // load properties for emails (Body.Text requires this, as it is not loaded by default)
-            exchangeService.LoadPropertiesForItems(emails, PropertySet.FirstClassProperties);
+            // load properties for emails
+            exchangeService.LoadPropertiesForItems(emails, new PropertySet(
+                BasePropertySet.FirstClassProperties,
+                ItemSchema.TextBody,
+                EmailMessageSchema.Body));
 
             // map exchange items to task output results
             List<EmailMessageResult> result = emails
@@ -144,8 +150,9 @@ namespace Frends.Community.Email
                 {
                     Id = msg.Id.UniqueId,
                     Date = msg.DateTimeReceived,
-                    Title = msg.Subject,
-                    Body = msg.Body.Text,
+                    Subject = msg.Subject,
+                    BodyText = msg.TextBody.Text,
+                    BodyHtml = msg.Body.Text,
                     To = string.Join(",", msg.ToRecipients.Select(j => j.Address)),
                     From = msg.From.Address,
                     Cc = string.Join(",", msg.CcRecipients.Select(j => j.Address)),

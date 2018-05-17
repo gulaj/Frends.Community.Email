@@ -205,11 +205,16 @@ namespace Frends.Community.Email
         /// <summary>
         /// Title of the email
         /// </summary>
-        public string Title { get; set; }
+        public string Subject { get; set; }
 
         /// <summary>
-        /// Body of the email
+        /// Body of the email as text
         /// </summary>
-        public string Body { get; set; }
+        public string BodyText { get; set; }
+
+        /// <summary>
+        /// Body html is available
+        /// </summary>
+        public string BodyHtml { get; set; }
     }
 }
