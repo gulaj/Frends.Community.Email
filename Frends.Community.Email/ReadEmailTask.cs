@@ -69,7 +69,7 @@ namespace Frends.Community.Email
                 client.Authenticate(settings.UserName, settings.Password);
 
                 var inbox = client.Inbox;
-                inbox.Open(FolderAccess.ReadOnly);
+                inbox.Open(FolderAccess.ReadWrite);
 
                 // read at most options.MaxEmails
                 for (int i = 0; i < inbox.Count && i < options.MaxEmails; i++)
