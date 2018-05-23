@@ -65,16 +65,21 @@ namespace Frends.Community.Email
                 // connect to imap server
                 client.Connect(settings.Host, settings.Port, settings.UseSSL);
 
-                // authenticate with imap servere
+                // authenticate with imap server
                 client.Authenticate(settings.UserName, settings.Password);
 
                 var inbox = client.Inbox;
                 inbox.Open(FolderAccess.ReadWrite);
 
-                // read at most options.MaxEmails
-                for (int i = 0; i < inbox.Count && i < options.MaxEmails; i++)
+                // get all or only unread emails?
+                IList<UniqueId> messageIds = options.GetOnlyUnreadEmails
+                    ? inbox.Search(SearchQuery.NotSeen)
+                    : inbox.Search(SearchQuery.All);
+                
+                // read as many as there are unread emails or as many as defined in options.MaxEmails
+                for (int i = 0; i < messageIds.Count && i < options.MaxEmails; i++)
                 {
-                    MimeMessage msg = inbox.GetMessage(i);
+                    MimeMessage msg = inbox.GetMessage(messageIds[i]);
                     result.Add(new EmailMessageResult
                     {
                         Id = msg.MessageId,
@@ -87,17 +92,18 @@ namespace Frends.Community.Email
                         Cc = string.Join(",", msg.Cc.Select(j => j.ToString()))
                     });
 
-                    // should delete emails?
-                    if (options.DeleteReadEmails)
-                    {
-                        inbox.AddFlags(i, MessageFlags.Deleted, true);
-                    }
-
                     // should mark emails as read?
                     if (!options.DeleteReadEmails && options.MarkEmailsAsRead)
                     {
-                        inbox.AddFlags(i, MessageFlags.Seen, true);
+                        inbox.AddFlags(messageIds[i], MessageFlags.Seen, true);
                     }
+                }
+
+                // should delete emails?
+                if (options.DeleteReadEmails && messageIds.Any())
+                {
+                    inbox.AddFlags(messageIds, MessageFlags.Deleted, false);
+                    inbox.Expunge();
                 }
 
                 client.Disconnect(true);
