@@ -74,6 +74,12 @@ namespace Frends.Community.Email
         public bool UseSSL { get; set; }
 
         /// <summary>
+        /// Should the task accept all certificates from IMAP server, including invalid ones?
+        /// </summary>
+        [DefaultValue(false)]
+        public bool AcceptAllCerts { get; set; }
+
+        /// <summary>
         /// Account name to login with
         /// </summary>
         [DefaultValue("accountName")]

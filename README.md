@@ -4,6 +4,7 @@ Frends task for sending emails. Task sends emails via SMTP protocol and can hand
 - [Installing](#installing)
 - [Tasks](#tasks)
   - [Send Email](#sendemail)
+  - [Read Email](#reademail)
 - [License](#license)
 - [Building](#building)
 - [Contributing](#contributing)
@@ -67,6 +68,72 @@ Settings for connecting to SMTP server
 | EmailSent | bool | Returns true if email message has been sent | true |
 | StatusString| string | Contains information about the task's result. | No attachments found matching path \"C:\\temp\\*.csv\". No email sent. |
 
+## ReadEmail
+
+Read emails from Exchange or IMAP server.
+
+Note: no support for fetching attachments.
+
+### Read email settings
+|Property                   |Type                       |Description                |Example|
+|---------------------------|---------------------------|---------------------------|---------------|
+|MailProtocol               |enum                       |Mail protocol to use       |IMAP|
+
+### Settings for IMAP servers
+
+|Property                   |Type                       |Description                |Example|
+|---------------------------|---------------------------|---------------------------|---------------|
+|Host                       |string                     |Host address               |imap.frends.com|
+|Port                       |int                        |Host port                  |993|
+|UseSSL                     |bool                       |Use SSL when connecting host|true|
+|AcceptAllCerts             |bool                       |Accept all certificates when connecting the host, if true, will accept event invalid certificates. If false, will accept self-signed certificates if the root is untrusted|false|
+|UserName                   |string                     |Account name to login with|emailUser|
+|Password                   |string                     |Account password          |***|
+
+### Settings for Exchange servers
+
+|Property                   |Type                       |Description                |Example|
+|---------------------------|---------------------------|---------------------------|---------------|
+|ExchangeServerVersion      |enum                       |Exchange server version    |Exchange2013_SP1|
+|UseAutoDiscover            |bool                       |If true, task will try to autodiscover exchange server address from given email address|true|
+|ServerAddress              |string                     |Exchange server address    |exchange.frends.com|
+|UseAgentAccount            |bool                       |If true, will try to authenticate against server with the running frends agent account|false|
+|EmailAddress               |string                     |Account email address      |agent@frends.com|
+|Password                   |string                     |Account password           |***|
+
+### Options
+
+|Property                   |Type                       |Description                |Example|
+|---------------------------|---------------------------|---------------------------|---------------|
+|MaxEmails                  |int                        |Maximum number of emails to retrieve|10|
+|GetOnlyUnreadEmails        |bool                       |If true, will retrieve only unread emails|false|
+|MarkEmailsAsRead           |bool                       |If true, will mark retrieved emails as read|false|
+|DeleteReadEmails           |bool                       |If true, will delete retrieved emails from server|false|
+
+### Result
+ReadEmail task returns a list of EmailMessageResult objects. Each object contains following properties:
+
+|Property                   |Type                       |Description                |Example|
+|---------------------------|---------------------------|---------------------------|---------------|
+|Id                         |string                     |Email message id           | ... |
+|To                         |string                     |To field from email        |agent@frends.com|
+|Cc                         |string                     |Cc field from email        |doubleagent@frends.com|
+|From                       |string                     |From field from email      |sender@frends.com|
+|Date                       |DateTime                   |Received date              | ... |
+|Subject                    |string                     |Email subject              |Important email!|
+|BodyText                   |string                     |Plain text email body      | ... |
+|BodyHtml                   |string                     |Html email body            | ... |
+
+### Usage
+You can loop email message by giving task result as input to foreach-shape:
+```sh
+#result[ReadEmail]
+```
+
+You can reference email properties like so:
+```sh
+#result[ReadEmail][0].BodyText
+```
 
 # License
 

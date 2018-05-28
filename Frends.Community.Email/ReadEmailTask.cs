@@ -59,8 +59,15 @@ namespace Frends.Community.Email
 
             using (var client = new ImapClient())
             {
-                // accept all certs
-                client.ServerCertificateValidationCallback = (s, x509certificate, x590chain, sslPolicyErrors) => true;
+                // accept all certs?
+                if (settings.AcceptAllCerts)
+                {
+                    client.ServerCertificateValidationCallback = (s, x509certificate, x590chain, sslPolicyErrors) => true;
+                }
+                else
+                {
+                    client.ServerCertificateValidationCallback = MailService.DefaultServerCertificateValidationCallback;
+                }
 
                 // connect to imap server
                 client.Connect(settings.Host, settings.Port, settings.UseSSL);
