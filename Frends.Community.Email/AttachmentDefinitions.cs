@@ -20,6 +20,7 @@ namespace Frends.Community.Email
         /// Directory where attachments will be saved to.
         /// </summary>
         [DefaultValue("")]
+        [DisplayFormat(DataFormatString = "Text")]
         public string AttachmentSaveDirectory { get; set; }
 
         /// <summary>
@@ -33,12 +34,14 @@ namespace Frends.Community.Email
         /// Optional. If a sender is given, it will be used to filter emails.
         /// </summary>
         [DefaultValue("")]
+        [DisplayFormat(DataFormatString = "Text")]
         public string EmailSenderFilter { get; set; }
 
         /// <summary>
         /// Optional. If a subject is given, it will be used to filter emails.
         /// </summary>
         [DefaultValue("")]
+        [DisplayFormat(DataFormatString = "Text")]
         public string EmailSubjectFilter { get; set; }
 
         /// <summary>
@@ -69,6 +72,10 @@ namespace Frends.Community.Email
     /// </summary>
     public class EmailAttachmentResult
     {
+        /// <summary>
+        /// Email id
+        /// </summary>
+        public string Status { get; set; }
         /// <summary>
         /// Email id
         /// </summary>

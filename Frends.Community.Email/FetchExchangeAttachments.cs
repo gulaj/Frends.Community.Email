@@ -26,6 +26,7 @@ namespace Frends.Community.Email
         /// <returns>
         /// List of
         /// {
+        /// string Status
         /// string Id.
         /// string To.
         /// string Cc.
@@ -79,18 +80,31 @@ namespace Frends.Community.Email
             // Get email items
             List<EmailMessage> emails = exchangeResults.Where(msg => msg is EmailMessage).Cast<EmailMessage>().ToList();
 
-            // Check if list is empty and if an error needs to be thrown
+            // Check if list is empty and if an error needs to be thrown.
+            // If not, return a result with a notification of no found messages.
             if (emails.Count == 0 && options.ThrowErrorIfNoMessagesFound)
+            {
                 throw new ArgumentException("No messages matching the search filter found. ",
                     nameof(options.ThrowErrorIfNoMessagesFound));
+            }
+            else if (emails.Count == 0)
+            {
+                result.Add(new EmailAttachmentResult
+                {
+                    Status = "No messages matching the search filter found.",
+                    Id = "",
+                    Date = DateTime.Now,
+                    Subject = "",
+                    BodyText = "",
+                    To = "",
+                    From = "",
+                    Cc = "",
+                    AttachmentSaveDirs = new List<string> { }
+                });
+                return result;
+            }
 
-            // load properties for emails
-            exchangeService.LoadPropertiesForItems(emails, new PropertySet(
-            BasePropertySet.FirstClassProperties,
-                ItemSchema.TextBody,
-                ItemSchema.Attachments));
-
-            // Save file attachments to directory, interrupt if cancellation is requested
+            // Load properties for each email and process attachments
             foreach (EmailMessage email in emails)
             {
                 // Initialize attachment save path list
@@ -98,8 +112,21 @@ namespace Frends.Community.Email
 
                 cToken.ThrowIfCancellationRequested();
 
+                // Define property set
+                var propSet = new PropertySet(
+                        BasePropertySet.FirstClassProperties,
+                        EmailMessageSchema.Body,
+                        EmailMessageSchema.Attachments);
+                propSet.RequestedBodyType = BodyType.Text;
+
+                // Bind and load email message with desired properties
+                var newEmail = EmailMessage.Bind(
+                    exchangeService,
+                    email.Id,
+                    propSet);
+
                 // Save all attachments to given directory
-                foreach (Microsoft.Exchange.WebServices.Data.Attachment attachment in email.Attachments)
+                foreach (var attachment in newEmail.Attachments)
                 {
                     FileAttachment file = attachment as FileAttachment;
                     string path = "";
@@ -123,13 +150,14 @@ namespace Frends.Community.Email
                 // Build result for email message
                 result.Add(new EmailAttachmentResult
                 {
-                    Id = email.Id.UniqueId,
-                    Date = email.DateTimeReceived,
-                    Subject = email.Subject,
-                    BodyText = email.TextBody.Text,
-                    To = string.Join(",", email.ToRecipients.Select(j => j.Address)),
-                    From = email.From.Address,
-                    Cc = string.Join(",", email.CcRecipients.Select(j => j.Address)),
+                    Status = "Ok.",
+                    Id = newEmail.Id.UniqueId,
+                    Date = newEmail.DateTimeReceived,
+                    Subject = newEmail.Subject,
+                    BodyText = newEmail.Body.Text,
+                    To = string.Join(",", newEmail.ToRecipients.Select(j => j.Address)),
+                    From = newEmail.From.Address,
+                    Cc = string.Join(",", newEmail.CcRecipients.Select(j => j.Address)),
                     AttachmentSaveDirs = pathList
                 });
             }
