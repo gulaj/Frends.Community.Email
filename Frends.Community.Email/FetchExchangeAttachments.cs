@@ -52,7 +52,7 @@ namespace Frends.Community.Email
             List<EmailAttachmentResult> result = new List<EmailAttachmentResult> { };
 
             // Connect
-            ExchangeService exchangeService = ReadEmailTask.ConnectToExchangeService(settings);
+            ExchangeService exchangeService = Services.ConnectToExchangeService(settings);
 
             // Exchange search view
             ItemView view = new ItemView(options.MaxEmails);

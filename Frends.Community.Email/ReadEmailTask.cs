@@ -128,7 +128,7 @@ namespace Frends.Community.Email
         public static List<EmailMessageResult> ReadEmailFromExchangeServer(ReadEmailSettings settings, ReadEmailOptions options)
         {
             // connect
-            ExchangeService exchangeService = ConnectToExchangeService(settings.ExchangeSettings);
+            ExchangeService exchangeService = Services.ConnectToExchangeService(settings.ExchangeSettings);
 
             // exchange search view
             ItemView view = new ItemView(options.MaxEmails);
@@ -188,89 +188,6 @@ namespace Frends.Community.Email
                 }
             }
             
-            return result;
-        }
-
-        /// <summary>
-        /// Helper for connecting to Exchange service
-        /// </summary>
-        /// <param name="settings">Exchange server related settings</param>
-        /// <returns></returns>
-        public static ExchangeService ConnectToExchangeService(ExchangeSettings settings)
-        {
-            ExchangeVersion ev;
-            switch (settings.ExchangeServerVersion)
-            {
-                case ExchangeServerVersion.Exchange2007_SP1:
-                    ev = ExchangeVersion.Exchange2007_SP1;
-                    break;
-                case ExchangeServerVersion.Exchange2010:
-                    ev = ExchangeVersion.Exchange2010;
-                    break;
-                case ExchangeServerVersion.Exchange2010_SP1:
-                    ev = ExchangeVersion.Exchange2010_SP1;
-                    break;
-                case ExchangeServerVersion.Exchange2010_SP2:
-                    ev = ExchangeVersion.Exchange2010_SP2;
-                    break;
-                case ExchangeServerVersion.Exchange2013:
-                    ev = ExchangeVersion.Exchange2013;
-                    break;
-                case ExchangeServerVersion.Exchange2013_SP1:
-                    ev = ExchangeVersion.Exchange2013_SP1;
-                    break;
-                default:
-                    ev = ExchangeVersion.Exchange2013;
-                    break;
-            }
-
-            ExchangeService service = new ExchangeService(ev);
-
-            if (string.IsNullOrWhiteSpace(settings.EmailAddress))
-            {
-                service.UseDefaultCredentials = true;
-            }
-            else
-            {
-                service.Credentials = new NetworkCredential(settings.EmailAddress, settings.Password);
-            }
-
-            if (settings.UseAutoDiscover)
-            {
-                service.AutodiscoverUrl(settings.EmailAddress, RedirectionUrlValidationCallback);
-            }
-            else
-            {
-                service.Url = new Uri(settings.ServerAddress);
-            }
-
-            return service;
-        }
-
-        // The following is a basic redirection validation callback method. It 
-        // inspects the redirection URL and only allows the Service object to 
-        // follow the redirection link if the URL is using HTTPS. 
-        //
-        // This redirection URL validation callback provides sufficient security
-        // for development and testing of your application. However, it may not
-        // provide sufficient security for your deployed application. You should
-        // always make sure that the URL validation callback method that you use
-        // meets the security requirements of your organization.
-        private static bool RedirectionUrlValidationCallback(string redirectionUrl)
-        {
-            // The default for the validation callback is to reject the URL.
-            bool result = false;
-
-            Uri redirectionUri = new Uri(redirectionUrl);
-
-            // Validate the contents of the redirection URL. In this simple validation
-            // callback, the redirection URL is considered valid if it is using HTTPS
-            // to encrypt the authentication credentials. 
-            if (redirectionUri.Scheme == "https")
-            {
-                result = true;
-            }
-
             return result;
         }
     }
