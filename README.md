@@ -176,3 +176,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | ---------------------| ---------------------|
 | 1.0.0 | Initial version of SendEmail |
 | 1.2.0 | Tasks no longer use Frends.Task.Attributes|
+| 1.3.0 | Fixed nuspec and references for build server|
