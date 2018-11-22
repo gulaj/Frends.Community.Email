@@ -60,10 +60,12 @@ namespace Frends.Community.Email
             // For exchange search results
             FindItemsResults<Item> exchangeResults;
 
-            // Create search filter collection. Always search only for emails with attachments.
-            var searchFilter = new SearchFilter.SearchFilterCollection(LogicalOperator.And, new SearchFilter.IsEqualTo(ItemSchema.HasAttachments, true));
+            // Create search filter collection.
+            var searchFilter = new SearchFilter.SearchFilterCollection(LogicalOperator.And);
 
             // Construct rest of search filter based on options
+            if (options.GetOnlyEmailsWithAttachments)
+                searchFilter.Add(new SearchFilter.IsEqualTo(ItemSchema.HasAttachments, true));
 
             if (options.GetOnlyUnreadEmails)
                 searchFilter.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.IsRead, false));

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Frends.Community.Email</id>
-    <version>1.1.30</version>
+    <version>1.3.2</version>
     <title>FRENDS email tasks</title>
     <authors>HiQ Finland</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -28,8 +28,8 @@
     </frameworkAssemblies>
   </metadata>
   <files>
-    <file src="\Frends.Community.Email\bin\release\Frends.Community.Email.dll" target="lib\net452\Frends.Community.Email.dll" />
-    <file src="\Frends.Community.Email\bin\release\Frends.Community.Email.xml" target="lib\net452\Frends.Community.Email.xml" />
+    <file src="Frends.Community.Email\bin\release\Frends.Community.Email.dll" target="lib\net452\Frends.Community.Email.dll" />
+    <file src="Frends.Community.Email\bin\release\Frends.Community.Email.xml" target="lib\net452\Frends.Community.Email.xml" />
     <file src="FrendsTaskMetadata.json" target="FrendsTaskMetadata.json"/>
   </files>
 </package>

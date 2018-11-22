@@ -104,7 +104,7 @@ namespace Frends.Community.Email
 
             //Create mail object
             var mail = new MailMessage()
-            {
+            {   
                 From = new MailAddress(input.From, input.SenderName),
                 Subject = input.Subject,
                 Body = input.Message,

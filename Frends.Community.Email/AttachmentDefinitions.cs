@@ -56,6 +56,11 @@ namespace Frends.Community.Email
         public bool GetOnlyUnreadEmails { get; set; }
 
         /// <summary>
+        /// If true, the task fetches only emails with attachments.
+        /// </summary>
+        public bool GetOnlyEmailsWithAttachments { get; set; }
+
+        /// <summary>
         /// If true, then marks queried emails as read unless task execution is cancelled during processing.
         /// </summary>
         public bool MarkEmailsAsRead { get; set; }
