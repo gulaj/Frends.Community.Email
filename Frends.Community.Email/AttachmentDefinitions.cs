@@ -4,12 +4,33 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Frends.Community.Email
-{
+{    
+     /// <summary>
+     /// Body type options
+     /// </summary>
+    public enum RequestedBodyType
+    {
+        /// <summary>
+        /// Text
+        /// </summary>
+        Text,
+
+        /// <summary>
+        /// HTML
+        /// </summary>
+        HTML
+    }
+
     /// <summary>
     /// Attachment options
     /// </summary>
     public class FetchAttachmentOptions
     {
+        /// <summary>
+        /// What type of body should be fetched?
+        /// </summary>
+        public RequestedBodyType requestedBodyType { get; set; }
+
         /// <summary>
         /// Maximum number of emails to retrieve
         /// </summary>

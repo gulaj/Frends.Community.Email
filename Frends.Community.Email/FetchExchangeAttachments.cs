@@ -119,7 +119,8 @@ namespace Frends.Community.Email
                         BasePropertySet.FirstClassProperties,
                         EmailMessageSchema.Body,
                         EmailMessageSchema.Attachments);
-                propSet.RequestedBodyType = BodyType.Text;
+
+                propSet.RequestedBodyType = (options.requestedBodyType == RequestedBodyType.HTML) ? BodyType.HTML : BodyType.Text;
 
                 // Bind and load email message with desired properties
                 var newEmail = EmailMessage.Bind(
