@@ -5,9 +5,6 @@
     },
     {
       "TaskMethod": "Frends.Community.Email.ReadEmailTask.ReadEmail"
-    },
-    {
-      "TaskMethod": "Frends.Community.Email.FetchExchangeAttachmentsTask.FetchExchangeAttachments"
     }
   ]
 }

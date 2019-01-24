@@ -158,7 +158,7 @@ Fetches attachments from an Exchange server.
 |OverwriteAttachment        |bool                       |If true, files in the save directory with the sama name as the attachment will be overwritten|false|
 |EmailSenderFilter          |string                     |Optional. If a sender is given, it will be used to filter emails.|sender@frends.com|
 |EmailSubjectFilter         |string                     |Optional. If a subject is given, it will be used to filter emails (match as substring).|Payments|
-|ThrowErrorIfEmailNotFound  |bool                       |If true, error will be thrown if no attachments are found|false|
+|ThrowErrorIfNoMessagesFound|bool                       |If true, error will be thrown if no attachments are found|false|
 |GetOnlyUnreadEmails        |bool                       |If true, only attachments of unread emails will be fetched|false|
 |MarkEmailsAsRead           |bool                       |If true, will mark processed emails as read (unless execution is cancelled during processing) |false|
 |DeleteReadEmails           |bool                       |If true, will delete processed emails from server (unless execution is cancelled during processing)|false|

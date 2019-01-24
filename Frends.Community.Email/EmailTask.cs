@@ -9,7 +9,6 @@ using System.Text;
 
 #pragma warning disable 1591
 
-
 namespace Frends.Community.Email
 {
     public class EmailTask

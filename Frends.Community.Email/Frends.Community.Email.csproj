@@ -62,8 +62,6 @@
   <ItemGroup>
     <Compile Include="Definitions.cs" />
     <Compile Include="EmailTask.cs" />
-    <Compile Include="AttachmentDefinitions.cs" />
-    <Compile Include="FetchExchangeAttachments.cs" />
     <Compile Include="ReadEmailDefinitions.cs" />
     <Compile Include="ReadEmailTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

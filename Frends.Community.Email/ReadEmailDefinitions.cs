@@ -37,7 +37,7 @@ namespace Frends.Community.Email
         public MailProtocol MailProtocol { get; set; }
 
         /// <summary>
-        /// Settings for IMAP & POP3 servers
+        /// Settings for IMAP and POP3 servers
         /// </summary>
         [UIHint(nameof(Email.MailProtocol), "", MailProtocol.IMAP)]
         public ServerSettings ServerSettings { get; set; }
@@ -176,6 +176,45 @@ namespace Frends.Community.Email
         /// If true, then received emails will be hard deleted
         /// </summary>
         public bool DeleteReadEmails { get; set; }
+
+        /// <summary>
+        /// Optional. If a sender is given, it will be used to filter emails.
+        /// </summary>
+        [DefaultValue("")]
+        [DisplayFormat(DataFormatString = "Text")]
+        public string EmailSenderFilter { get; set; }
+
+        /// <summary>
+        /// Optional. If a subject is given, it will be used to filter emails.
+        /// </summary>
+        [DefaultValue("")]
+        [DisplayFormat(DataFormatString = "Text")]
+        public string EmailSubjectFilter { get; set; }
+
+        /// <summary>
+        /// If true, the task throws an error if no messages matching
+        /// search criteria were found.
+        /// </summary>
+        public bool ThrowErrorIfNoMessagesFound { get; set; }
+
+        /// <summary>
+        /// If true, the task fetches only emails with attachments.
+        /// </summary>
+        public bool GetOnlyEmailsWithAttachments { get; set; }
+
+        /// <summary>
+        /// Directory where attachments will be saved to.
+        /// </summary>
+        [DefaultValue("")]
+        [DisplayFormat(DataFormatString = "Text")]
+        public string AttachmentSaveDirectory { get; set; }
+
+        /// <summary>
+        /// Should the attachment be overwritten, if the save directory
+        /// already contains an attachment with the same name? If no,
+        /// a GUID will be added to the filename.
+        /// </summary>
+        public bool OverwriteAttachment { get; set; }
     }
 
     /// <summary>
@@ -222,5 +261,10 @@ namespace Frends.Community.Email
         /// Body html is available
         /// </summary>
         public string BodyHtml { get; set; }
+
+        /// <summary>
+        /// Attachment download path
+        /// </summary>
+        public List<string> AttachmentSaveDirs { get; set; }
     }
 }
