@@ -229,3 +229,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | ---------------------| ---------------------|
 | 1.0.0 | Initial version of SendEmail |
 | 1.1.23 | Added FetchExchangeAttachment |
+| 1.4.0 | ReadEmail can now read attachments. Removed FetchExchangeAttachment |
