@@ -1,13 +1,13 @@
-﻿using MailKit.Net.Imap;
+﻿using MailKit;
+using MailKit.Net.Imap;
 using MailKit.Search;
-using MailKit;
 using Microsoft.Exchange.WebServices.Data;
+using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
-using System.Net;
-using MimeKit;
 
 namespace Frends.Community.Email
 {
@@ -16,6 +16,8 @@ namespace Frends.Community.Email
     /// </summary>
     public class ReadEmailTask
     {
+        #region Public functions
+
         /// <summary>
         /// For reading emails from an server
         /// </summary>
@@ -44,7 +46,6 @@ namespace Frends.Community.Email
                     return ReadEmailWithIMAP(settings.ServerSettings, options);
                 default:
                     return new List<EmailMessageResult>();
-
             }
         }
 
@@ -127,56 +128,44 @@ namespace Frends.Community.Email
         /// <returns></returns>
         public static List<EmailMessageResult> ReadEmailFromExchangeServer(ReadEmailSettings settings, ReadEmailOptions options)
         {
-            // connect
-            ExchangeService exchangeService = ConnectToExchangeService(settings.ExchangeSettings);
+            // Check that save directory is given
+            if (options.AttachmentSaveDirectory == "")
+                throw new ArgumentException("No save directory given. ",
+                    nameof(options.AttachmentSaveDirectory));
 
-            // exchange search view
+            // Check that save directory exists
+            if (!Directory.Exists(options.AttachmentSaveDirectory))
+                throw new ArgumentException("Could not find or access attachment save directory. ",
+                    nameof(options.AttachmentSaveDirectory));
+
+            // Connect, create view and search filter
+            ExchangeService exchangeService = Services.ConnectToExchangeService(settings.ExchangeSettings);
             ItemView view = new ItemView(options.MaxEmails);
+            var searchFilter = BuildFilterCollection(options);
 
-            // for exchange search results
             FindItemsResults<Item> exchangeResults;
-
-            if (options.GetOnlyUnreadEmails)
-            {
-                // query only unread items
-                var searchFilter = new SearchFilter.SearchFilterCollection(LogicalOperator.And, new SearchFilter.IsEqualTo(EmailMessageSchema.IsRead, false));
-                exchangeResults = exchangeService.FindItems(WellKnownFolderName.Inbox, searchFilter, view);
-            }
-            else
-            {
-                // query all items
+            if (searchFilter.Count == 0)
                 exchangeResults = exchangeService.FindItems(WellKnownFolderName.Inbox, view);
-            }
+            else
+                exchangeResults = exchangeService.FindItems(WellKnownFolderName.Inbox, searchFilter, view);
 
-            // get email items
+            // Get email items
             List<EmailMessage> emails = exchangeResults.Where(msg => msg is EmailMessage).Cast<EmailMessage>().ToList();
 
-            // load properties for emails
-            exchangeService.LoadPropertiesForItems(emails, new PropertySet(
-                BasePropertySet.FirstClassProperties,
-                ItemSchema.TextBody,
-                EmailMessageSchema.Body));
+            // Check if list is empty and if an error needs to be thrown.
+            if (emails.Count == 0 && options.ThrowErrorIfNoMessagesFound)
+            {
+                // If not, return a result with a notification of no found messages.
+                throw new ArgumentException("No messages matching the search filter found. ",
+                    nameof(options.ThrowErrorIfNoMessagesFound));
+            }
 
-            // map exchange items to task output results
-            List<EmailMessageResult> result = emails
-                .Select(msg => new EmailMessageResult
-                {
-                    Id = msg.Id.UniqueId,
-                    Date = msg.DateTimeReceived,
-                    Subject = msg.Subject,
-                    BodyText = msg.TextBody.Text,
-                    BodyHtml = msg.Body.Text,
-                    To = string.Join(",", msg.ToRecipients.Select(j => j.Address)),
-                    From = msg.From.Address,
-                    Cc = string.Join(",", msg.CcRecipients.Select(j => j.Address)),
-                })
-                .ToList();
+            // Load properties for each email and process attachments
+            var result = ReadEmails(emails, exchangeService, options);
 
             // should delete mails?
             if (options.DeleteReadEmails)
-            {
                 emails.ForEach(msg => msg.Delete(DeleteMode.HardDelete));
-            }
 
             // should mark mails as read?
             if (!options.DeleteReadEmails && options.MarkEmailsAsRead)
@@ -191,87 +180,112 @@ namespace Frends.Community.Email
             return result;
         }
 
+        #endregion
+
+        #region Private functions
+
         /// <summary>
-        /// Helper for connecting to Exchange service
+        /// Build search filter from options.
         /// </summary>
-        /// <param name="settings">Exchange server related settings</param>
-        /// <returns></returns>
-        public static ExchangeService ConnectToExchangeService(ExchangeSettings settings)
+        /// <param name="options">Options.</param>
+        /// <returns>Search filter collection.</returns>
+        private static SearchFilter.SearchFilterCollection BuildFilterCollection(ReadEmailOptions options)
         {
-            ExchangeVersion ev;
-            switch (settings.ExchangeServerVersion)
-            {
-                case ExchangeServerVersion.Exchange2007_SP1:
-                    ev = ExchangeVersion.Exchange2007_SP1;
-                    break;
-                case ExchangeServerVersion.Exchange2010:
-                    ev = ExchangeVersion.Exchange2010;
-                    break;
-                case ExchangeServerVersion.Exchange2010_SP1:
-                    ev = ExchangeVersion.Exchange2010_SP1;
-                    break;
-                case ExchangeServerVersion.Exchange2010_SP2:
-                    ev = ExchangeVersion.Exchange2010_SP2;
-                    break;
-                case ExchangeServerVersion.Exchange2013:
-                    ev = ExchangeVersion.Exchange2013;
-                    break;
-                case ExchangeServerVersion.Exchange2013_SP1:
-                    ev = ExchangeVersion.Exchange2013_SP1;
-                    break;
-                default:
-                    ev = ExchangeVersion.Exchange2013;
-                    break;
-            }
+            // Create search filter collection.
+            var searchFilter = new SearchFilter.SearchFilterCollection(LogicalOperator.And);
 
-            ExchangeService service = new ExchangeService(ev);
+            // Construct rest of search filter based on options
+            if (options.GetOnlyEmailsWithAttachments)
+                searchFilter.Add(new SearchFilter.IsEqualTo(ItemSchema.HasAttachments, true));
 
-            if (string.IsNullOrWhiteSpace(settings.EmailAddress))
-            {
-                service.UseDefaultCredentials = true;
-            }
-            else
-            {
-                service.Credentials = new NetworkCredential(settings.EmailAddress, settings.Password);
-            }
+            if (options.GetOnlyUnreadEmails)
+                searchFilter.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.IsRead, false));
 
-            if (settings.UseAutoDiscover)
-            {
-                service.AutodiscoverUrl(settings.EmailAddress, RedirectionUrlValidationCallback);
-            }
-            else
-            {
-                service.Url = new Uri(settings.ServerAddress);
-            }
+            if (!String.IsNullOrEmpty(options.EmailSenderFilter))
+                searchFilter.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Sender, options.EmailSenderFilter));
 
-            return service;
+            if (!String.IsNullOrEmpty(options.EmailSubjectFilter))
+                searchFilter.Add(new SearchFilter.ContainsSubstring(EmailMessageSchema.Subject, options.EmailSubjectFilter));
+
+            return searchFilter;
         }
 
-        // The following is a basic redirection validation callback method. It 
-        // inspects the redirection URL and only allows the Service object to 
-        // follow the redirection link if the URL is using HTTPS. 
-        //
-        // This redirection URL validation callback provides sufficient security
-        // for development and testing of your application. However, it may not
-        // provide sufficient security for your deployed application. You should
-        // always make sure that the URL validation callback method that you use
-        // meets the security requirements of your organization.
-        private static bool RedirectionUrlValidationCallback(string redirectionUrl)
+        /// <summary>
+        /// Convert Email collection t EMailMessageResults.
+        /// </summary>
+        /// <param name="emails">Emails collection.</param>
+        /// <param name="exchangeService">Exchange services.</param>
+        /// <param name="options">Options.</param>
+        /// <returns>Collection of EmailMessageResult.</returns>
+        private static List<EmailMessageResult> ReadEmails(List<EmailMessage> emails, ExchangeService exchangeService, ReadEmailOptions options)
         {
-            // The default for the validation callback is to reject the URL.
-            bool result = false;
+            List<EmailMessageResult> result = new List<EmailMessageResult>();
 
-            Uri redirectionUri = new Uri(redirectionUrl);
-
-            // Validate the contents of the redirection URL. In this simple validation
-            // callback, the redirection URL is considered valid if it is using HTTPS
-            // to encrypt the authentication credentials. 
-            if (redirectionUri.Scheme == "https")
+            foreach (EmailMessage email in emails)
             {
-                result = true;
+                // Define property set
+                var propSet = new PropertySet(
+                        BasePropertySet.FirstClassProperties,
+                        EmailMessageSchema.Body,
+                        EmailMessageSchema.Attachments);
+
+                // Bind and load email message with desired properties
+                var newEmail = EmailMessage.Bind(exchangeService, email.Id, propSet);
+
+                // Save all attachments to given directory
+                var pathList = SaveAttachments(newEmail.Attachments, options);
+
+                // Build result for email message
+                var emailMessage = new EmailMessageResult
+                {
+                    Id = newEmail.Id.UniqueId,
+                    Date = newEmail.DateTimeReceived,
+                    Subject = newEmail.Subject,
+                    BodyText = "",
+                    BodyHtml = newEmail.Body.Text,
+                    To = string.Join(",", newEmail.ToRecipients.Select(j => j.Address)),
+                    From = newEmail.From.Address,
+                    Cc = string.Join(",", newEmail.CcRecipients.Select(j => j.Address)),
+                    AttachmentSaveDirs = pathList
+                };
+
+                // Catch exception in case of server version is earlier than Exchange2013
+                try { emailMessage.BodyText = newEmail.TextBody.Text; } catch { }
+
+                result.Add(emailMessage);
             }
 
             return result;
         }
+
+        /// <summary>
+        /// Save attachmets from collection to files.
+        /// </summary>
+        /// <param name="attachments">Attachments collection.</param>
+        /// <param name="options">Options.</param>
+        /// <returns>List of full paths to saved file attachments.</returns>
+        private static List<string> SaveAttachments(Microsoft.Exchange.WebServices.Data.AttachmentCollection attachments, ReadEmailOptions options)
+        {
+            List<string> pathList = new List<string> { };
+
+            foreach (var attachment in attachments)
+            {
+                FileAttachment file = attachment as FileAttachment;
+                string path = Path.Combine(
+                    options.AttachmentSaveDirectory,
+                    options.OverwriteAttachment ? file.Name :
+                        String.Concat(
+                            Path.GetFileNameWithoutExtension(file.Name), "_",
+                            Guid.NewGuid().ToString(),
+                            Path.GetExtension(file.Name))
+                        );
+                file.Load(path);
+                pathList.Add(path);
+            }
+
+            return pathList;
+        }
+
+        #endregion
     }
 }

@@ -9,7 +9,6 @@ using System.Text;
 
 #pragma warning disable 1591
 
-
 namespace Frends.Community.Email
 {
     public class EmailTask
@@ -104,7 +103,7 @@ namespace Frends.Community.Email
 
             //Create mail object
             var mail = new MailMessage()
-            {
+            {   
                 From = new MailAddress(input.From, input.SenderName),
                 Subject = input.Subject,
                 Body = input.Message,

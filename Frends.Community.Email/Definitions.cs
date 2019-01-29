@@ -53,7 +53,6 @@ namespace Frends.Community.Email
 
     public class Options
     {
-
         /// <summary>
         /// SMTP server address.
         /// </summary>
@@ -105,7 +104,6 @@ namespace Frends.Community.Email
         /// </summary>
         public string StatusString { get; set; }
     }
-
 
     public class Attachment
     {

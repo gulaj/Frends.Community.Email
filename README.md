@@ -134,6 +134,59 @@ You can reference email properties like so:
 ```sh
 #result[ReadEmail][0].BodyText
 ```
+## FetchExchangeAttachments
+
+Fetches attachments from an Exchange server.
+
+### Server settings
+
+|Property                   |Type                       |Description                |Example|
+|---------------------------|---------------------------|---------------------------|---------------|
+|ExchangeServerVersion      |enum                       |Exchange server version    |Exchange2013_SP1|
+|UseAutoDiscover            |bool                       |If true, task will try to autodiscover exchange server address from given email address|true|
+|ServerAddress              |string                     |Exchange server address    |exchange.frends.com|
+|UseAgentAccount            |bool                       |If true, will try to authenticate against server with the running frends agent account|false|
+|EmailAddress               |string                     |Account email address      |agent@frends.com|
+|Password                   |string                     |Account password           |***|
+
+### Options
+
+|Property                   |Type                       |Description                |Example|
+|---------------------------|---------------------------|---------------------------|---------------|
+|MaxEmails                  |int                        |Maximum number of emails to retrieve|10|
+|AttachmentSaveDirectory    |string                     |Directory where attachments will be saved to.|C:\WorkDir\|
+|OverwriteAttachment        |bool                       |If true, files in the save directory with the sama name as the attachment will be overwritten|false|
+|EmailSenderFilter          |string                     |Optional. If a sender is given, it will be used to filter emails.|sender@frends.com|
+|EmailSubjectFilter         |string                     |Optional. If a subject is given, it will be used to filter emails (match as substring).|Payments|
+|ThrowErrorIfNoMessagesFound|bool                       |If true, error will be thrown if no attachments are found|false|
+|GetOnlyUnreadEmails        |bool                       |If true, only attachments of unread emails will be fetched|false|
+|MarkEmailsAsRead           |bool                       |If true, will mark processed emails as read (unless execution is cancelled during processing) |false|
+|DeleteReadEmails           |bool                       |If true, will delete processed emails from server (unless execution is cancelled during processing)|false|
+
+### Result
+FetchExchangeAttachments task returns a list of EmailAttachmentResult objects. Each object contains following properties:
+
+|Property                   |Type                       |Description                     |Example|
+|---------------------------|---------------------------|--------------------------------|---------------|
+|Id                         |string                     |Email message id                | ... |
+|To                         |string                     |To field from email             |agent@frends.com|
+|Cc                         |string                     |Cc field from email             |doubleagent@frends.com|
+|From                       |string                     |From field from email           |sender@frends.com|
+|Date                       |DateTime                   |Received date                   | ... |
+|Subject                    |string                     |Email subject                   |Important email!|
+|BodyText                   |string                     |Plain text email body           | ... |
+|AttachmentSaveDirs         |List of strings            |Full paths to saved attachments | {"C:\WorkDir\attchmnt1.txt","C:\WorkDir\attchmnt2.txt"}  |
+
+### Usage
+You can loop resulting objects by giving task result as input to foreach-shape:
+```sh
+#result[FetchExchangeAttachments]
+```
+
+You can reference result properties like so:
+```sh
+#result[FetchExchangeAttachments][0].BodyText
+```
 
 # License
 
@@ -175,5 +228,7 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | Version             | Changes                 |
 | ---------------------| ---------------------|
 | 1.0.0 | Initial version of SendEmail |
+| 1.1.23 | Added FetchExchangeAttachment |
 | 1.2.0 | Tasks no longer use Frends.Task.Attributes|
 | 1.3.0 | Fixed nuspec and references for build server|
+| 1.4.0 | ReadEmail can now read attachments. Removed FetchExchangeAttachment |
