@@ -9,6 +9,7 @@ using NUnit.Framework;
 namespace Frends.Community.Email.Tests
 {
     [TestFixture]
+    [Ignore("Tests requires external SMTP server to work")]
     class ReadEmailTask_ExchangeTest
     {
         private readonly string _userName = "";

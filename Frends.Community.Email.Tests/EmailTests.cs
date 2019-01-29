@@ -8,6 +8,7 @@ namespace Frends.Community.Email.Tests
      /// NOTE: To run these unit tests, you need an SMTP test server. Fill in the properties below with your values.
      /// </summary>
     [TestFixture]
+    [Ignore("Tests requires external SMTP server to work")]
     public class EmailTests
     {
         // ****************************************** FILL THESE ******************************************************
