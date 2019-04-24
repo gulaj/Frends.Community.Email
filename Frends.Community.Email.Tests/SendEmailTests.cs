@@ -9,7 +9,7 @@ namespace Frends.Community.Email.Tests
      /// </summary>
     [TestFixture]
     [Ignore("Tests requires external SMTP server to work")]
-    public class EmailTests
+    public class SendEmailTests
     {
         // ****************************************** FILL THESE ******************************************************
         private const string USERNAME = "";

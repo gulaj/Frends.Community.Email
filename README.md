@@ -4,7 +4,8 @@ Frends task for sending emails. Task sends emails via SMTP protocol and can hand
 - [Installing](#installing)
 - [Tasks](#tasks)
   - [Send Email](#sendemail)
-  - [Read Email](#reademail)
+  - [Read Email With IMAP](#reademailwithimap)
+  - [Read Email From Exchange Server](#reademailfromexchangeserver)
 - [License](#license)
 - [Building](#building)
 - [Contributing](#contributing)
@@ -68,16 +69,10 @@ Settings for connecting to SMTP server
 | EmailSent | bool | Returns true if email message has been sent | true |
 | StatusString| string | Contains information about the task's result. | No attachments found matching path \"C:\\temp\\*.csv\". No email sent. |
 
-## ReadEmail
 
-Read emails from Exchange or IMAP server.
+## ReadEmailWithIMAP
 
-Note: no support for fetching attachments.
-
-### Read email settings
-|Property                   |Type                       |Description                |Example|
-|---------------------------|---------------------------|---------------------------|---------------|
-|MailProtocol               |enum                       |Mail protocol to use       |IMAP|
+Read emails using IMAP server.
 
 ### Settings for IMAP servers
 
@@ -89,17 +84,6 @@ Note: no support for fetching attachments.
 |AcceptAllCerts             |bool                       |Accept all certificates when connecting the host, if true, will accept event invalid certificates. If false, will accept self-signed certificates if the root is untrusted|false|
 |UserName                   |string                     |Account name to login with|emailUser|
 |Password                   |string                     |Account password          |***|
-
-### Settings for Exchange servers
-
-|Property                   |Type                       |Description                |Example|
-|---------------------------|---------------------------|---------------------------|---------------|
-|ExchangeServerVersion      |enum                       |Exchange server version    |Exchange2013_SP1|
-|UseAutoDiscover            |bool                       |If true, task will try to autodiscover exchange server address from given email address|true|
-|ServerAddress              |string                     |Exchange server address    |exchange.frends.com|
-|UseAgentAccount            |bool                       |If true, will try to authenticate against server with the running frends agent account|false|
-|EmailAddress               |string                     |Account email address      |agent@frends.com|
-|Password                   |string                     |Account password           |***|
 
 ### Options
 
@@ -134,9 +118,8 @@ You can reference email properties like so:
 ```sh
 #result[ReadEmail][0].BodyText
 ```
-## FetchExchangeAttachments
-
-Fetches attachments from an Exchange server.
+## ReadEmailFromExchangeServer
+Read emails from exchange server with or without attachements
 
 ### Server settings
 
@@ -154,17 +137,19 @@ Fetches attachments from an Exchange server.
 |Property                   |Type                       |Description                |Example|
 |---------------------------|---------------------------|---------------------------|---------------|
 |MaxEmails                  |int                        |Maximum number of emails to retrieve|10|
-|AttachmentSaveDirectory    |string                     |Directory where attachments will be saved to.|C:\WorkDir\|
-|OverwriteAttachment        |bool                       |If true, files in the save directory with the sama name as the attachment will be overwritten|false|
-|EmailSenderFilter          |string                     |Optional. If a sender is given, it will be used to filter emails.|sender@frends.com|
-|EmailSubjectFilter         |string                     |Optional. If a subject is given, it will be used to filter emails (match as substring).|Payments|
-|ThrowErrorIfNoMessagesFound|bool                       |If true, error will be thrown if no attachments are found|false|
 |GetOnlyUnreadEmails        |bool                       |If true, only attachments of unread emails will be fetched|false|
 |MarkEmailsAsRead           |bool                       |If true, will mark processed emails as read (unless execution is cancelled during processing) |false|
 |DeleteReadEmails           |bool                       |If true, will delete processed emails from server (unless execution is cancelled during processing)|false|
+|EmailSenderFilter          |string                     |Optional. If a sender is given, it will be used to filter emails.|sender@frends.com|
+|EmailSubjectFilter         |string                     |Optional. If a subject is given, it will be used to filter emails (match as substring).|Payments|
+|ThrowErrorIfNoMessagesFound|bool                       |If true, error will be thrown if no attachments are found|false|
+|IgnoreAttachments			|bool                       |If true, attachement handling will be skipped
+|GetOnlyEmailsWithAttachments	|bool                   |If true, gets only emails with attachements
+|AttachmentSaveDirectory    |string                     |Directory where attachments will be saved to.|C:\WorkDir\|
+|OverwriteAttachment        |bool                       |If true, files in the save directory with the sama name as the attachment will be overwritten|false|
 
 ### Result
-FetchExchangeAttachments task returns a list of EmailAttachmentResult objects. Each object contains following properties:
+ReadEmailFromExchangeServer task returns a list of EmailMessageResult objects. Each object contains following properties:
 
 |Property                   |Type                       |Description                     |Example|
 |---------------------------|---------------------------|--------------------------------|---------------|
@@ -180,12 +165,12 @@ FetchExchangeAttachments task returns a list of EmailAttachmentResult objects. E
 ### Usage
 You can loop resulting objects by giving task result as input to foreach-shape:
 ```sh
-#result[FetchExchangeAttachments]
+#result[ReadEmailFromExchangeServer]
 ```
 
 You can reference result properties like so:
 ```sh
-#result[FetchExchangeAttachments][0].BodyText
+#result[ReadEmailFromExchangeServer][0].BodyText
 ```
 
 # License
@@ -232,3 +217,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 1.2.0 | Tasks no longer use Frends.Task.Attributes|
 | 1.3.0 | Fixed nuspec and references for build server|
 | 1.4.0 | ReadEmail can now read attachments. Removed FetchExchangeAttachment |
+| 1.5.0 | Split ReadEmail to ReadEmailWithIMAP and ReadEmailFromExchangeServer. Added IgnoreAttachments and Office356 option |

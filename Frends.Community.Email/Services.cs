@@ -50,7 +50,7 @@ namespace Frends.Community.Email
             // In all other cases, return false.
             return false;
         }
-        
+
         /// <summary>
         /// Helper for connecting to Exchange service
         /// </summary>
@@ -59,6 +59,7 @@ namespace Frends.Community.Email
         public static ExchangeService ConnectToExchangeService(ExchangeSettings settings)
         {
             ExchangeVersion ev;
+            var office365 = false;
             switch (settings.ExchangeServerVersion)
             {
                 case ExchangeServerVersion.Exchange2007_SP1:
@@ -79,23 +80,34 @@ namespace Frends.Community.Email
                 case ExchangeServerVersion.Exchange2013_SP1:
                     ev = ExchangeVersion.Exchange2013_SP1;
                     break;
+                case ExchangeServerVersion.Office365:
+                    ev = ExchangeVersion.Exchange2013;
+                    office365 = true;
+                    break;
                 default:
                     ev = ExchangeVersion.Exchange2013;
                     break;
             }
 
-            ExchangeService service = new ExchangeService(ev);
-
+            ExchangeService service;
             // SSL certification check
             ServicePointManager.ServerCertificateValidationCallback = ExchangeCertificateValidationCallBack;
 
-            if (string.IsNullOrWhiteSpace(settings.EmailAddress))
+            if (!office365)
             {
-                service.UseDefaultCredentials = true;
+                service = new ExchangeService(ev);
+                if (string.IsNullOrWhiteSpace(settings.EmailAddress))
+                {
+                    service.UseDefaultCredentials = true;
+                }
+                else
+                {
+                    service.Credentials = new NetworkCredential(settings.EmailAddress, settings.Password);
+                }
             }
             else
             {
-                service.Credentials = new NetworkCredential(settings.EmailAddress, settings.Password);
+                service = new ExchangeService { Credentials = new WebCredentials(settings.EmailAddress, settings.Password) };
             }
 
             if (settings.UseAutoDiscover)
