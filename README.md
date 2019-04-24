@@ -159,7 +159,7 @@ ReadEmailFromExchangeServer task returns a list of EmailMessageResult objects. E
 |From                       |string                     |From field from email           |sender@frends.com|
 |Date                       |DateTime                   |Received date                   | ... |
 |Subject                    |string                     |Email subject                   |Important email!|
-|BodyText                   |string                     |Plain text email body           | ... |
+|BodyHtml                   |string                     |Plain text email body           | ... |
 |AttachmentSaveDirs         |List of strings            |Full paths to saved attachments | {"C:\WorkDir\attchmnt1.txt","C:\WorkDir\attchmnt2.txt"}  |
 
 ### Usage
@@ -170,7 +170,7 @@ You can loop resulting objects by giving task result as input to foreach-shape:
 
 You can reference result properties like so:
 ```sh
-#result[ReadEmailFromExchangeServer][0].BodyText
+#result[ReadEmailFromExchangeServer][0].BodyHtml
 ```
 
 # License
