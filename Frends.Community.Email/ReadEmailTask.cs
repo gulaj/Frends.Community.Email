@@ -141,13 +141,19 @@ namespace Frends.Community.Email
             ExchangeService exchangeService = Services.ConnectToExchangeService(settings);
             ItemView view = new ItemView(options.MaxEmails);
             var searchFilter = BuildFilterCollection(options);
-
             FindItemsResults<Item> exchangeResults;
-            if (searchFilter.Count == 0)
-                exchangeResults = exchangeService.FindItems(WellKnownFolderName.Inbox, view);
-            else
-                exchangeResults = exchangeService.FindItems(WellKnownFolderName.Inbox, searchFilter, view);
 
+            if (!string.IsNullOrEmpty(settings.Mailbox))
+            {
+                var mb = new Mailbox(settings.Mailbox);
+                var fid = new FolderId(WellKnownFolderName.Inbox, mb);
+                var inbox = Folder.Bind(exchangeService, fid);
+                exchangeResults = searchFilter.Count == 0 ? inbox.FindItems(view) : inbox.FindItems(searchFilter, view);
+            }
+            else
+            {
+                exchangeResults = searchFilter.Count == 0 ? exchangeService.FindItems(WellKnownFolderName.Inbox, view) : exchangeService.FindItems(WellKnownFolderName.Inbox, searchFilter, view);
+            }
             // Get email items
             List<EmailMessage> emails = exchangeResults.Where(msg => msg is EmailMessage).Cast<EmailMessage>().ToList();
 

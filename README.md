@@ -129,8 +129,9 @@ Read emails from exchange server with or without attachements
 |UseAutoDiscover            |bool                       |If true, task will try to autodiscover exchange server address from given email address|true|
 |ServerAddress              |string                     |Exchange server address    |exchange.frends.com|
 |UseAgentAccount            |bool                       |If true, will try to authenticate against server with the running frends agent account|false|
-|EmailAddress               |string                     |Account email address      |agent@frends.com|
+|Username	                |string                     |Account username      |agent@frends.com|
 |Password                   |string                     |Account password           |***|
+|Mailbox	                |string                     |Mail box to read emails from. Leave empty to read from default inbox |agentinbox@frends.com|
 
 ### Options
 

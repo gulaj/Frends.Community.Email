@@ -86,7 +86,7 @@ namespace Frends.Community.Email
         /// </summary>
         [DefaultValue("agent@frends.com")]
         [DisplayFormat(DataFormatString = "Text")]
-        public string EmailAddress { get; set; }
+        public string Username { get; set; }
 
         /// <summary>
         /// Account password
@@ -94,6 +94,14 @@ namespace Frends.Community.Email
         [PasswordPropertyText]
         [UIHint(nameof(UseAgentAccount), "", false)]
         public string Password { get; set; }
+
+
+        /// <summary>
+        /// Inbox to read emails from. If empty reads from default mailbox.
+        /// </summary>
+        [DefaultValue("agentinbox@frends.com")]
+        [DisplayFormat(DataFormatString = "Text")]
+        public string Mailbox { get; set; }
     }
 
     /// <summary>

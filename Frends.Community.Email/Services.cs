@@ -81,7 +81,7 @@ namespace Frends.Community.Email
                     ev = ExchangeVersion.Exchange2013_SP1;
                     break;
                 case ExchangeServerVersion.Office365:
-                    ev = ExchangeVersion.Exchange2013;
+                    ev = ExchangeVersion.Exchange2013_SP1;
                     office365 = true;
                     break;
                 default:
@@ -89,30 +89,29 @@ namespace Frends.Community.Email
                     break;
             }
 
-            ExchangeService service;
+            ExchangeService service = new ExchangeService(ev);
             // SSL certification check
             ServicePointManager.ServerCertificateValidationCallback = ExchangeCertificateValidationCallBack;
 
             if (!office365)
             {
-                service = new ExchangeService(ev);
-                if (string.IsNullOrWhiteSpace(settings.EmailAddress))
+                if (string.IsNullOrWhiteSpace(settings.Username))
                 {
                     service.UseDefaultCredentials = true;
                 }
                 else
                 {
-                    service.Credentials = new NetworkCredential(settings.EmailAddress, settings.Password);
+                    service.Credentials = new NetworkCredential(settings.Username, settings.Password);
                 }
             }
             else
             {
-                service = new ExchangeService { Credentials = new WebCredentials(settings.EmailAddress, settings.Password) };
+                service.Credentials = new WebCredentials(settings.Username, settings.Password);
             }
 
             if (settings.UseAutoDiscover)
             {
-                service.AutodiscoverUrl(settings.EmailAddress, RedirectionUrlValidationCallback);
+                service.AutodiscoverUrl(settings.Username, RedirectionUrlValidationCallback);
             }
             else
             {
