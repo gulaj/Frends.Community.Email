@@ -18,11 +18,12 @@ namespace Frends.Community.Email
     {
         #region Public functions
 
+
         /// <summary>
-        /// For reading emails from an server
+        /// Read emails from IMAP server
         /// </summary>
-        /// <param name="settings">Settings to use</param>
-        /// <param name="options">Options to use</param>
+        /// <param name="settings">IMAP server settings</param>
+        /// <param name="options">Email options</param>
         /// <returns>
         /// List of
         /// {
@@ -31,30 +32,12 @@ namespace Frends.Community.Email
         /// string Cc.
         /// string From.
         /// DateTime Date.
-        /// string Title.
+        /// string Subject.
         /// string BodyText.
         /// string BodyHtml.
         /// }
         /// </returns>
-        public static List<EmailMessageResult> ReadEmail([PropertyTab]ReadEmailSettings settings, [PropertyTab]ReadEmailOptions options)
-        {
-            switch (settings.MailProtocol)
-            {
-                case MailProtocol.Exchange:
-                    return ReadEmailFromExchangeServer(settings, options);
-                case MailProtocol.IMAP:
-                    return ReadEmailWithIMAP(settings.ServerSettings, options);
-                default:
-                    return new List<EmailMessageResult>();
-            }
-        }
-
-        /// <summary>
-        /// Read emails from IMAP server
-        /// </summary>
-        /// <param name="settings">IMAP server settings</param>
-        /// <param name="options">Email options</param>
-        public static List<EmailMessageResult> ReadEmailWithIMAP(ServerSettings settings, ReadEmailOptions options)
+        public static List<EmailMessageResult> ReadEmailWithIMAP([PropertyTab]ImapSettings settings, [PropertyTab]ImapOptions options)
         {
             var result = new List<EmailMessageResult>();
 
@@ -83,7 +66,7 @@ namespace Frends.Community.Email
                 IList<UniqueId> messageIds = options.GetOnlyUnreadEmails
                     ? inbox.Search(SearchQuery.NotSeen)
                     : inbox.Search(SearchQuery.All);
-                
+
                 // read as many as there are unread emails or as many as defined in options.MaxEmails
                 for (int i = 0; i < messageIds.Count && i < options.MaxEmails; i++)
                 {
@@ -125,30 +108,52 @@ namespace Frends.Community.Email
         /// </summary>
         /// <param name="settings">Settings to use</param>
         /// <param name="options">Options to use</param>
-        /// <returns></returns>
-        public static List<EmailMessageResult> ReadEmailFromExchangeServer(ReadEmailSettings settings, ReadEmailOptions options)
+        /// <returns>
+        /// List of
+        /// {
+        /// string Id.
+        /// string To.
+        /// string Cc.
+        /// string From.
+        /// DateTime Date.
+        /// string Subject.
+        /// string BodyText.
+        /// string BodyHtml.
+        /// List(string) AttachmentSaveDirs
+        /// }
+        /// </returns>
+        public static List<EmailMessageResult> ReadEmailFromExchangeServer([PropertyTab]ExchangeSettings settings, [PropertyTab]ExchangeOptions options)
         {
-            // Check that save directory is given
-            if (options.AttachmentSaveDirectory == "")
-                throw new ArgumentException("No save directory given. ",
-                    nameof(options.AttachmentSaveDirectory));
+            if (!options.IgnoreAttachments)
+            {
+                // Check that save directory is given
+                if (options.AttachmentSaveDirectory == "")
+                    throw new ArgumentException("No save directory given. ",
+                        nameof(options.AttachmentSaveDirectory));
 
-            // Check that save directory exists
-            if (!Directory.Exists(options.AttachmentSaveDirectory))
-                throw new ArgumentException("Could not find or access attachment save directory. ",
-                    nameof(options.AttachmentSaveDirectory));
+                // Check that save directory exists
+                if (!Directory.Exists(options.AttachmentSaveDirectory))
+                    throw new ArgumentException("Could not find or access attachment save directory. ",
+                        nameof(options.AttachmentSaveDirectory));
+            }
 
             // Connect, create view and search filter
-            ExchangeService exchangeService = Services.ConnectToExchangeService(settings.ExchangeSettings);
+            ExchangeService exchangeService = Services.ConnectToExchangeService(settings);
             ItemView view = new ItemView(options.MaxEmails);
             var searchFilter = BuildFilterCollection(options);
-
             FindItemsResults<Item> exchangeResults;
-            if (searchFilter.Count == 0)
-                exchangeResults = exchangeService.FindItems(WellKnownFolderName.Inbox, view);
-            else
-                exchangeResults = exchangeService.FindItems(WellKnownFolderName.Inbox, searchFilter, view);
 
+            if (!string.IsNullOrEmpty(settings.Mailbox))
+            {
+                var mb = new Mailbox(settings.Mailbox);
+                var fid = new FolderId(WellKnownFolderName.Inbox, mb);
+                var inbox = Folder.Bind(exchangeService, fid);
+                exchangeResults = searchFilter.Count == 0 ? inbox.FindItems(view) : inbox.FindItems(searchFilter, view);
+            }
+            else
+            {
+                exchangeResults = searchFilter.Count == 0 ? exchangeService.FindItems(WellKnownFolderName.Inbox, view) : exchangeService.FindItems(WellKnownFolderName.Inbox, searchFilter, view);
+            }
             // Get email items
             List<EmailMessage> emails = exchangeResults.Where(msg => msg is EmailMessage).Cast<EmailMessage>().ToList();
 
@@ -170,13 +175,13 @@ namespace Frends.Community.Email
             // should mark mails as read?
             if (!options.DeleteReadEmails && options.MarkEmailsAsRead)
             {
-                foreach(EmailMessage msg in emails)
+                foreach (EmailMessage msg in emails)
                 {
                     msg.IsRead = true;
                     msg.Update(ConflictResolutionMode.AutoResolve);
                 }
             }
-            
+
             return result;
         }
 
@@ -189,7 +194,7 @@ namespace Frends.Community.Email
         /// </summary>
         /// <param name="options">Options.</param>
         /// <returns>Search filter collection.</returns>
-        private static SearchFilter.SearchFilterCollection BuildFilterCollection(ReadEmailOptions options)
+        private static SearchFilter.SearchFilterCollection BuildFilterCollection(ExchangeOptions options)
         {
             // Create search filter collection.
             var searchFilter = new SearchFilter.SearchFilterCollection(LogicalOperator.And);
@@ -201,10 +206,10 @@ namespace Frends.Community.Email
             if (options.GetOnlyUnreadEmails)
                 searchFilter.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.IsRead, false));
 
-            if (!String.IsNullOrEmpty(options.EmailSenderFilter))
+            if (!string.IsNullOrEmpty(options.EmailSenderFilter))
                 searchFilter.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Sender, options.EmailSenderFilter));
 
-            if (!String.IsNullOrEmpty(options.EmailSubjectFilter))
+            if (!string.IsNullOrEmpty(options.EmailSubjectFilter))
                 searchFilter.Add(new SearchFilter.ContainsSubstring(EmailMessageSchema.Subject, options.EmailSubjectFilter));
 
             return searchFilter;
@@ -217,7 +222,7 @@ namespace Frends.Community.Email
         /// <param name="exchangeService">Exchange services.</param>
         /// <param name="options">Options.</param>
         /// <returns>Collection of EmailMessageResult.</returns>
-        private static List<EmailMessageResult> ReadEmails(List<EmailMessage> emails, ExchangeService exchangeService, ReadEmailOptions options)
+        private static List<EmailMessageResult> ReadEmails(IEnumerable<EmailMessage> emails, ExchangeService exchangeService, ExchangeOptions options)
         {
             List<EmailMessageResult> result = new List<EmailMessageResult>();
 
@@ -232,8 +237,12 @@ namespace Frends.Community.Email
                 // Bind and load email message with desired properties
                 var newEmail = EmailMessage.Bind(exchangeService, email.Id, propSet);
 
-                // Save all attachments to given directory
-                var pathList = SaveAttachments(newEmail.Attachments, options);
+                var pathList = new List<string>();
+                if (!options.IgnoreAttachments)
+                {
+                    // Save all attachments to given directory
+                    pathList = SaveAttachments(newEmail.Attachments, options);
+                }
 
                 // Build result for email message
                 var emailMessage = new EmailMessageResult
@@ -259,12 +268,12 @@ namespace Frends.Community.Email
         }
 
         /// <summary>
-        /// Save attachmets from collection to files.
+        /// Save attachments from collection to files.
         /// </summary>
         /// <param name="attachments">Attachments collection.</param>
         /// <param name="options">Options.</param>
         /// <returns>List of full paths to saved file attachments.</returns>
-        private static List<string> SaveAttachments(Microsoft.Exchange.WebServices.Data.AttachmentCollection attachments, ReadEmailOptions options)
+        private static List<string> SaveAttachments(Microsoft.Exchange.WebServices.Data.AttachmentCollection attachments, ExchangeOptions options)
         {
             List<string> pathList = new List<string> { };
 

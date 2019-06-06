@@ -1,39 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace Frends.Community.Email.Tests
 {
     [TestFixture]
     [Ignore("Tests requires external SMTP server to work")]
-    class ReadEmailTask_ExchangeTest
+    public class ReadExchangeEmailTest
     {
         private readonly string _userName = "";
         private readonly string _password = "";
+        private readonly string _mailbox = "";
 
         [Test]
         public void ReadEmailFromExchangeServer_ShouldReadOneItem()
         {
-            var settings = new ReadEmailSettings
+            var settings = new ExchangeSettings
             {
-                ExchangeSettings = new ExchangeSettings
-                {
-                    ExchangeServerVersion = ExchangeServerVersion.Exchange2010,
-                    UseAutoDiscover = true,
-                    EmailAddress = _userName,
-                    Password = _password
-                }
+                ExchangeServerVersion = ExchangeServerVersion.Office365,
+                UseAutoDiscover = true,
+                Username = _userName,
+                Password = _password,
+                Mailbox = _mailbox
             };
-            var options = new ReadEmailOptions
+            var options = new ExchangeOptions
             {
                 MaxEmails = 1,
-                DeleteReadEmails = true,
+                DeleteReadEmails = false,
                 GetOnlyUnreadEmails = false,
-                MarkEmailsAsRead = false
+                MarkEmailsAsRead = false,
+                IgnoreAttachments = true
             };
 
             List<EmailMessageResult> result = ReadEmailTask.ReadEmailFromExchangeServer(settings, options);

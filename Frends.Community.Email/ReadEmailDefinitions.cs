@@ -3,56 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
+#pragma warning disable 1591
+
 namespace Frends.Community.Email
 {
     /// <summary>
-    /// Protocol to use
-    /// </summary>
-    public enum MailProtocol
-    {
-        /// <summary>
-        /// Pop3 protocol
-        /// </summary>
-        // Pop3, // NOT IMPLEMENTED
-
-        /// <summary>
-        /// IMAP
-        /// </summary>
-        IMAP, // NOT TESTED
-
-        /// <summary>
-        /// Exchange servers
-        /// </summary>
-        Exchange
-    }
-
-    /// <summary>
-    /// Connection settings
-    /// </summary>
-    public class ReadEmailSettings
-    {
-        /// <summary>
-        /// Protocol to use
-        /// </summary>
-        public MailProtocol MailProtocol { get; set; }
-
-        /// <summary>
-        /// Settings for IMAP and POP3 servers
-        /// </summary>
-        [UIHint(nameof(Email.MailProtocol), "", MailProtocol.IMAP)]
-        public ServerSettings ServerSettings { get; set; }
-
-        /// <summary>
-        /// Exchange server specific options
-        /// </summary>
-        [UIHint(nameof(Email.MailProtocol), "", MailProtocol.Exchange)]
-        public ExchangeSettings ExchangeSettings { get;set; }
-    }
-
-    /// <summary>
     /// Settings for IMAP and POP3 servers
     /// </summary>
-    public class ServerSettings
+    public class ImapSettings
     {
         /// <summary>
         /// Host address
@@ -94,7 +52,7 @@ namespace Frends.Community.Email
     }
 
     /// <summary>
-    /// Exchange server spesific options
+    /// Exchange server specific options
     /// </summary>
     public class ExchangeSettings
     {
@@ -128,7 +86,7 @@ namespace Frends.Community.Email
         /// </summary>
         [DefaultValue("agent@frends.com")]
         [DisplayFormat(DataFormatString = "Text")]
-        public string EmailAddress { get; set; }
+        public string Username { get; set; }
 
         /// <summary>
         /// Account password
@@ -136,10 +94,18 @@ namespace Frends.Community.Email
         [PasswordPropertyText]
         [UIHint(nameof(UseAgentAccount), "", false)]
         public string Password { get; set; }
+
+
+        /// <summary>
+        /// Inbox to read emails from. If empty reads from default mailbox.
+        /// </summary>
+        [DefaultValue("agentinbox@frends.com")]
+        [DisplayFormat(DataFormatString = "Text")]
+        public string Mailbox { get; set; }
     }
 
     /// <summary>
-    /// Wich exchange version to target
+    /// Which exchange version to target
     /// </summary>
     public enum ExchangeServerVersion
     {
@@ -148,13 +114,41 @@ namespace Frends.Community.Email
         Exchange2010_SP1,
         Exchange2010_SP2,
         Exchange2013,
-        Exchange2013_SP1
+        Exchange2013_SP1,
+        Office365
     }
 
     /// <summary>
-    /// Options related to read operation
+    /// Options related to IMAP reading
     /// </summary>
-    public class ReadEmailOptions
+    public class ImapOptions
+    {
+        /// <summary>
+        /// Maximum number of emails to retrieve
+        /// </summary>
+        [DefaultValue(10)]
+        public int MaxEmails { get; set; }
+
+        /// <summary>
+        /// Should get only unread emails?
+        /// </summary>
+        public bool GetOnlyUnreadEmails { get; set; }
+
+        /// <summary>
+        /// If true, then marks queried emails as read
+        /// </summary>
+        public bool MarkEmailsAsRead { get; set; }
+
+        /// <summary>
+        /// If true, then received emails will be hard deleted
+        /// </summary>
+        public bool DeleteReadEmails { get; set; }
+    }
+
+    /// <summary>
+    /// Options related to Exchange reading
+    /// </summary>
+    public class ExchangeOptions
     {
         /// <summary>
         /// Maximum number of emails to retrieve
@@ -198,8 +192,14 @@ namespace Frends.Community.Email
         public bool ThrowErrorIfNoMessagesFound { get; set; }
 
         /// <summary>
+        /// If true, the task doesn't handle emails attachments.
+        /// </summary>
+        public bool IgnoreAttachments { get; set; }
+
+        /// <summary>
         /// If true, the task fetches only emails with attachments.
         /// </summary>
+        [UIHint(nameof(IgnoreAttachments), "", false)]
         public bool GetOnlyEmailsWithAttachments { get; set; }
 
         /// <summary>
@@ -207,6 +207,7 @@ namespace Frends.Community.Email
         /// </summary>
         [DefaultValue("")]
         [DisplayFormat(DataFormatString = "Text")]
+        [UIHint(nameof(IgnoreAttachments), "", false)]
         public string AttachmentSaveDirectory { get; set; }
 
         /// <summary>
@@ -214,6 +215,7 @@ namespace Frends.Community.Email
         /// already contains an attachment with the same name? If no,
         /// a GUID will be added to the filename.
         /// </summary>
+        [UIHint(nameof(IgnoreAttachments), "", false)]
         public bool OverwriteAttachment { get; set; }
     }
 

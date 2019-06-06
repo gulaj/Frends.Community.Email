@@ -46,9 +46,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EmailTests.cs" />
+    <Compile Include="SendEmailTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReadEmailTask_ExchangeTest.cs" />
+    <Compile Include="ReadExchangeEmailTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
