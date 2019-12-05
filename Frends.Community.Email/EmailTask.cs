@@ -100,6 +100,8 @@ namespace Frends.Community.Email
             var separators = new[] { ',', ';' };
 
             string[] recipients = input.To.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            string[] ccRecipients = input.Cc.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            string[] bccRecipients = input.Bcc.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
             //Create mail object
             var mail = new MailMessage()
@@ -113,6 +115,16 @@ namespace Frends.Community.Email
             foreach (var recipientAddress in recipients)
             {
                 mail.To.Add(recipientAddress);
+            }
+            //Add CC recipients
+            foreach (var ccRecipient in ccRecipients)
+            {
+                mail.CC.Add(ccRecipient);
+            }
+            //Add BCC recipients
+            foreach (var bccRecipient in bccRecipients)
+            {
+                mail.Bcc.Add(bccRecipient);
             }
 
             //Set message encoding

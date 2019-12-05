@@ -14,6 +14,18 @@ namespace Frends.Community.Email
         public string To { get; set; }
 
         /// <summary>
+        /// Cc recipient addresses separated by ',' or ';'
+        /// </summary>
+        [DefaultValue("\"jane.doe@somedomain.com\"")]
+        public string Cc { get; set; }
+
+        /// <summary>
+        /// Bcc recipient addresses separated by ',' or ';'
+        /// </summary>
+        [DefaultValue("\"jane.doe@somedomain.com\"")]
+        public string Bcc { get; set; }
+
+        /// <summary>
         /// Sender address.
         /// </summary>
         [DefaultValue("\"john.doe@somedomain.com\"")]
