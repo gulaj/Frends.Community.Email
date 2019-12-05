@@ -28,6 +28,8 @@ Settings for message properties
 | Property             | Type                 | Description                          | Example |
 | ---------------------| ---------------------| ------------------------------------ | ----- |
 | To | string | Recipient addresses separated by , or ; | jane.doe@somedomain.com |
+| Cc | string | Cc recipient addresses separated by , or ; | jane.doe@somedomain.com |
+| Bcc | string | Bcc recipient addresses separated by , or ; | jane.doe@somedomain.com |
 | From | string | The email address the message is sent from | john.doe@somedomain.com |
 | Sender Name | string | Name of the sender | Frends errors |
 | Subject | string | Subject of the message | Hello Jane |
@@ -219,3 +221,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 1.3.0 | Fixed nuspec and references for build server|
 | 1.4.0 | ReadEmail can now read attachments. Removed FetchExchangeAttachment |
 | 2.0.0 | Split ReadEmail to ReadEmailWithIMAP and ReadEmailFromExchangeServer. Added IgnoreAttachments and Office356 option |
+| 2.1.0 | Add support for Cc and Bcc recipients to SendEmail task |
