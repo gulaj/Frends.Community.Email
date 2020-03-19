@@ -82,4 +82,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 
 | Version | Changes |
 | ------- | ------- |
-| 0.0.1   | Development stil going on. |
+| 2.2.0   | Development stil going on. |
