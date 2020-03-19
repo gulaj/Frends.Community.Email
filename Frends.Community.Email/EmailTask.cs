@@ -26,9 +26,9 @@ namespace Frends.Community.Email
             using (var client = InitializeSmtpClient(SMTPSettings))
             {
                 using (var mail = InitializeMailMessage(message))
-                {                 
+                {
                     if (attachments != null)
-                        foreach(var attachment in attachments)
+                        foreach (var attachment in attachments)
                         {
                             if (attachment.AttachmentType == AttachmentType.FileAttachment)
                             {
@@ -56,12 +56,12 @@ namespace Frends.Community.Email
                                 if (!string.IsNullOrEmpty(attachment.stringAttachment.FileContent))
                                     mail.Attachments.Add(System.Net.Mail.Attachment.CreateAttachmentFromString(attachment.stringAttachment.FileContent, attachment.stringAttachment.FileName));
                             }
-                        
+
                         }
-                    
+
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    client.Send(mail);                 
+                    client.Send(mail);
 
                     output.EmailSent = true;
                     output.StatusString = string.Format("Email sent to: {0}", mail.To.ToString());
@@ -70,7 +70,7 @@ namespace Frends.Community.Email
                 }
             }
         }
-        
+
         /// <summary>
         /// Initializes new SmtpClient with given parameters.
         /// </summary>
@@ -86,7 +86,7 @@ namespace Frends.Community.Email
             };
 
             if (!settings.UseWindowsAuthentication)
-                smtpClient.Credentials = new NetworkCredential(settings.UserName, settings.Password);            
+                smtpClient.Credentials = new NetworkCredential(settings.UserName, settings.Password);
 
             return smtpClient;
         }
@@ -105,7 +105,7 @@ namespace Frends.Community.Email
 
             //Create mail object
             var mail = new MailMessage()
-            {   
+            {
                 From = new MailAddress(input.From, input.SenderName),
                 Subject = input.Subject,
                 Body = input.Message,
@@ -140,11 +140,11 @@ namespace Frends.Community.Email
         /// Gets all actual file names of attachments matching given file path
         /// </summary>
         private static ICollection<string> GetAttachmentFiles(string filePath)
-        {            
+        {
             string folder = Path.GetDirectoryName(filePath);
             string fileMask = Path.GetFileName(filePath) != "" ? Path.GetFileName(filePath) : "*";
 
-            string[] filePaths = Directory.GetFiles(folder, fileMask);            
+            string[] filePaths = Directory.GetFiles(folder, fileMask);
 
             return filePaths;
         }
