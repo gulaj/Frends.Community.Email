@@ -144,19 +144,19 @@ public static List<EmailMessageResult> ReadEmailFromExchangeServer([PropertyTab]
     var searchFilter = BuildFilterCollection(options);
     FindItemsResults<Item> exchangeResults;
 
-    if (!string.IsNullOrEmpty(settings.Mailbox))
-    {
-        var mb = new Mailbox(settings.Mailbox);
-        var fid = new FolderId(WellKnownFolderName.Inbox, mb);
-        var inbox = Folder.Bind(exchangeService, fid);
-        exchangeResults = searchFilter.Count == 0 ? inbox.Result.FindItems(view).Result : inbox.Result.FindItems(searchFilter, view).Result;
-    }
-    else
-    {
-        exchangeResults = searchFilter.Count == 0 ? exchangeService.FindItems(WellKnownFolderName.Inbox, view).Result : exchangeService.FindItems(WellKnownFolderName.Inbox, searchFilter, view).Result;
-    }
-    // Get email items
-    List<EmailMessage> emails = exchangeResults.Where(msg => msg is EmailMessage).Cast<EmailMessage>().ToList();
+            if (!string.IsNullOrEmpty(settings.Mailbox))
+            {
+                var mb = new Mailbox(settings.Mailbox);
+                var fid = new FolderId(WellKnownFolderName.Inbox, mb);
+                var inbox = Folder.Bind(exchangeService, fid);
+                exchangeResults = searchFilter.Count == 0 ? inbox.FindItems(view) : inbox.FindItems(searchFilter, view);
+            }
+            else
+            {
+                exchangeResults = searchFilter.Count == 0 ? exchangeService.FindItems(WellKnownFolderName.Inbox, view) : exchangeService.FindItems(WellKnownFolderName.Inbox, searchFilter, view);
+            }
+            // Get email items
+            List<EmailMessage> emails = exchangeResults.Where(msg => msg is EmailMessage).Cast<EmailMessage>().ToList();
 
     // Check if list is empty and if an error needs to be thrown.
     if (emails.Count == 0 && options.ThrowErrorIfNoMessagesFound)
@@ -241,28 +241,29 @@ private static List<EmailMessageResult> ReadEmails(IEnumerable<EmailMessage> ema
         var pathList = new List<string>();
         if (!options.IgnoreAttachments)
         {
-            // Save all attachments to given directory
-            
-            pathList = SaveAttachments(newEmail.Result.Attachments, options);
+                    // Save all attachments to given directory
+
+                pathList = SaveAttachments(newEmail.Attachments, options);
         }
 
-                // Build result for email message
-                
+        // Build result for email message
+
         var emailMessage = new EmailMessageResult
         {
-            Id = newEmail.Result.Id.UniqueId,
-            Date = newEmail.Result.DateTimeReceived,
-            Subject = newEmail.Result.Subject,
+            Id = newEmail.Id.UniqueId,
+            Date = newEmail.DateTimeReceived,
+            Subject = newEmail.Subject,
             BodyText = "",
-            BodyHtml = newEmail.Result.Body.Text,
-            To = string.Join(",", newEmail.Result.ToRecipients.Select(j => j.Address)),
-            From = newEmail.Result.From.Address,
-            Cc = string.Join(",", newEmail.Result.CcRecipients.Select(j => j.Address)),
-            AttachmentSaveDirs = pathList 
+            BodyHtml = newEmail.Body.Text,
+            To = string.Join(",", newEmail.ToRecipients.Select(j => j.Address)),
+            From = newEmail.From.Address,
+            Cc = string.Join(",", newEmail.CcRecipients.Select(j => j.Address)),
+            AttachmentSaveDirs = pathList
         };
 
+
         // Catch exception in case of server version is earlier than Exchange2013
-        try { emailMessage.BodyText = newEmail.Result.TextBody.Text; } catch { }
+        try { emailMessage.BodyText = newEmail.TextBody.Text; } catch { }
 
         result.Add(emailMessage);
     }
