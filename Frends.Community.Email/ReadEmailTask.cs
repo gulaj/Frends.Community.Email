@@ -19,6 +19,9 @@ namespace Frends.Community.Email
         #region Public functions
 
 
+
+
+
 /// <summary>
 /// Read emails from IMAP server
 /// </summary>
@@ -126,6 +129,9 @@ public static List<EmailMessageResult> ReadEmailWithIMAP([PropertyTab]ImapSettin
 /// </returns>
 public static List<EmailMessageResult> ReadEmailFromExchangeServer([PropertyTab]ExchangeSettings settings, [PropertyTab]ExchangeOptions options)
 {
+#if NET471
+
+
     if (!options.IgnoreAttachments)
     {
         // Check that save directory is given
@@ -184,18 +190,22 @@ public static List<EmailMessageResult> ReadEmailFromExchangeServer([PropertyTab]
     }
 
     return result;
-}
 
-#endregion
+#else
+    throw new Exception("Only supported on .NET Framework (i.e. on Windows).");
+    #endif
+        }
 
-#region Private functions
+        #endregion
 
-/// <summary>
-/// Build search filter from options.
-/// </summary>
-/// <param name="options">Options.</param>
-/// <returns>Search filter collection.</returns>
-private static SearchFilter.SearchFilterCollection BuildFilterCollection(ExchangeOptions options)
+        #region Private functions
+
+        /// <summary>
+        /// Build search filter from options.
+        /// </summary>
+        /// <param name="options">Options.</param>
+        /// <returns>Search filter collection.</returns>
+        private static SearchFilter.SearchFilterCollection BuildFilterCollection(ExchangeOptions options)
 {
     // Create search filter collection.
     var searchFilter = new SearchFilter.SearchFilterCollection(LogicalOperator.And);
@@ -225,7 +235,10 @@ private static SearchFilter.SearchFilterCollection BuildFilterCollection(Exchang
 /// <returns>Collection of EmailMessageResult.</returns>
 private static List<EmailMessageResult> ReadEmails(IEnumerable<EmailMessage> emails, ExchangeService exchangeService, ExchangeOptions options)
 {
-    List<EmailMessageResult> result = new List<EmailMessageResult>();
+
+#if NET471
+
+            List<EmailMessageResult> result = new List<EmailMessageResult>();
 
     foreach (EmailMessage email in emails)
     {
@@ -269,15 +282,19 @@ private static List<EmailMessageResult> ReadEmails(IEnumerable<EmailMessage> ema
     }
 
     return result;
-}
 
-/// <summary>
-/// Save attachments from collection to files.
-/// </summary>
-/// <param name="attachments">Attachments collection.</param>
-/// <param name="options">Options.</param>
-/// <returns>List of full paths to saved file attachments.</returns>
-private static List<string> SaveAttachments(Microsoft.Exchange.WebServices.Data.AttachmentCollection attachments, ExchangeOptions options)
+#else
+    throw new Exception("Only supported on .NET Framework (i.e. on Windows).");
+#endif
+        }
+
+        /// <summary>
+        /// Save attachments from collection to files.
+        /// </summary>
+        /// <param name="attachments">Attachments collection.</param>
+        /// <param name="options">Options.</param>
+        /// <returns>List of full paths to saved file attachments.</returns>
+        private static List<string> SaveAttachments(Microsoft.Exchange.WebServices.Data.AttachmentCollection attachments, ExchangeOptions options)
 {
     List<string> pathList = new List<string> { };
 

@@ -1,5 +1,4 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System.IO;
 
 namespace Frends.Community.Email.Tests
@@ -49,6 +48,8 @@ namespace Frends.Community.Email.Tests
             {
                 From = FROMEMAILADDRESS,
                 To = TOEMAILADDRESS,
+                Cc = "",
+                Bcc = "",
                 Message = "testmsg",
                 IsMessageHtml = false,
                 SenderName = "EmailTestSender",
