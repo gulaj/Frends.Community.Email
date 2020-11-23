@@ -1,4 +1,6 @@
 # Frends.Community.Email
+
+[![Actions Status](https://github.com/CommunityHiQ/Frends.Community.Email/workflows/PackAndPushAfterMerge/badge.svg)](https://github.com/CommunityHiQ/Frends.Community.Email/actions) ![MyGet](https://img.shields.io/myget/frends-community/v/Frends.Community.Email) [![License: UNLICENSED](https://img.shields.io/badge/License-UNLICENSED-yellow.svg)](https://opensource.org/licenses/UNLICENSED) 
 Frends task for sending emails. Task sends emails via SMTP protocol and can handle attachments either from file or as raw string input.
 
 - [Installing](#installing)
