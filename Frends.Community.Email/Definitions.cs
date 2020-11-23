@@ -173,5 +173,5 @@ namespace Frends.Community.Email
         /// </summary>
         [DefaultValue("\"\"")]
         public string FileName { get; set; }
-    }    
+    }
 }

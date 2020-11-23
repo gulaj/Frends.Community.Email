@@ -1,4 +1,6 @@
 # Frends.Community.Email
+
+[![Actions Status](https://github.com/CommunityHiQ/Frends.Community.Email/workflows/PackAndPushAfterMerge/badge.svg)](https://github.com/CommunityHiQ/Frends.Community.Email/actions) ![MyGet](https://img.shields.io/myget/frends-community/v/Frends.Community.Email) [![License: UNLICENSED](https://img.shields.io/badge/License-UNLICENSED-yellow.svg)](https://opensource.org/licenses/UNLICENSED) 
 Frends task for sending emails. Task sends emails via SMTP protocol and can handle attachments either from file or as raw string input.
 
 - [Installing](#installing)
@@ -186,19 +188,17 @@ Clone a copy of the repo
 
 `git clone https://github.com/CommunityHiQ/Frends.Community.Email.git`
 
-Restore dependencies
-
-`nuget restore frends.community.email`
-
 Rebuild the project
 
-Run Tests with nunit3. Tests can be found under
+`dotnet build`
 
-`Frends.Community.Email.Tests\bin\Release\Frends.Community.Email.Tests.dll`
+Run Tests
 
-Create a nuget package
+`dotnet test`
 
-`nuget pack nuspec/Frends.Community.Email.nuspec`
+Create a NuGet package
+
+`dotnet pack --configuration Release`
 
 # Contributing
 When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
@@ -222,3 +222,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 1.4.0 | ReadEmail can now read attachments. Removed FetchExchangeAttachment |
 | 2.0.0 | Split ReadEmail to ReadEmailWithIMAP and ReadEmailFromExchangeServer. Added IgnoreAttachments and Office356 option |
 | 2.1.0 | Add support for Cc and Bcc recipients to SendEmail task |
+| 2.2.0 | Ported version for linux agent |
