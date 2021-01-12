@@ -123,7 +123,9 @@ You can reference email properties like so:
 #result[ReadEmail][0].BodyText
 ```
 ## ReadEmailFromExchangeServer
-Read emails from exchange server with or without attachements
+Read emails from exchange server with or without attachements.
+
+This task can be only used on legacy (Windows) agent, because Microsoft.Exchange.WebServices.NETStandard does not implement all needed APIs on .Net standard.
 
 ### Server settings
 
