@@ -10,7 +10,7 @@
     <IncludeSource>true</IncludeSource>
     <PackageTags>Frends</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>2.2.0</Version>
+    <Version>2.3.0</Version>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
   </PropertyGroup>
 
@@ -32,7 +32,7 @@
   </ItemGroup>
 
 	<ItemGroup>
-    <PackageReference Include="MailKit" Version="2.5.2" />
+    <PackageReference Include="MailKit" Version="[2.5.2]" />
     <PackageReference Include="MimeKit" Version="2.9.2" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.8.8" />
     <PackageReference Include="System.ComponentModel" Version="4.3.0" />

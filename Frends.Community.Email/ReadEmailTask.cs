@@ -109,7 +109,7 @@ public static List<EmailMessageResult> ReadEmailWithIMAP([PropertyTab]ImapSettin
 }
 
 /// <summary>
-/// Reads emails from an Exchange server
+/// Reads emails from an Exchange server. Can be used only on legacy (Windows) agents.
 /// </summary>
 /// <param name="settings">Settings to use</param>
 /// <param name="options">Options to use</param>

@@ -123,7 +123,9 @@ You can reference email properties like so:
 #result[ReadEmail][0].BodyText
 ```
 ## ReadEmailFromExchangeServer
-Read emails from exchange server with or without attachements
+Read emails from exchange server with or without attachements.
+
+This task can be only used on legacy (Windows) agent, because Microsoft.Exchange.WebServices.NETStandard does not implement all needed APIs on .Net standard.
 
 ### Server settings
 
@@ -223,3 +225,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 2.0.0 | Split ReadEmail to ReadEmailWithIMAP and ReadEmailFromExchangeServer. Added IgnoreAttachments and Office356 option |
 | 2.1.0 | Add support for Cc and Bcc recipients to SendEmail task |
 | 2.2.0 | Ported version for linux agent |
+| 2.3.0 | Tighter MAilKit dependency rules |
