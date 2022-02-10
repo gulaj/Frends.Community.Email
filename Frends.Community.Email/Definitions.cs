@@ -84,16 +84,15 @@ namespace Frends.Community.Email
         public bool UseSsl { get; set; }
 
         /// <summary>
-        /// Set this true if you want to use windows authentication to authenticate to SMTP server.
+        /// Should the task accept all certificates from IMAP server, including invalid ones?
         /// </summary>
-        [DefaultValue("true")]
-        public bool UseWindowsAuthentication { get; set; }
+        [DefaultValue(false)]
+        public bool AcceptAllCerts { get; set; }
 
         /// <summary>
         /// Use this username to log in to the SMTP server
         /// </summary>
         [DefaultValue("\"\"")]
-        [UIHint(nameof(UseWindowsAuthentication), "", false)]
         public string UserName { get; set; }
 
         /// <summary>
@@ -101,7 +100,6 @@ namespace Frends.Community.Email
         /// </summary>
         [PasswordPropertyText(true)]
         [DefaultValue("\"\"")]
-        [UIHint(nameof(UseWindowsAuthentication), "", false)]
         public string Password { get; set; }
     }
 

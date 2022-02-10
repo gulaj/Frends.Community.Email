@@ -16,9 +16,9 @@ namespace Frends.Community.Email.Tests
         private const string SMTPADDRESS = "";
         private const string TOEMAILADDRESS = "";
         private const string FROMEMAILADDRESS = "";
-        private const int PORT = 587;
+        private const int PORT = 465;
         private const bool USESSL = true;
-        private const bool USEWINDOWSAUTHENTICATION = false;
+        private const bool ACCEPTALLCERTS = false;
         // ************************************************************************************************************
 
 
@@ -63,7 +63,7 @@ namespace Frends.Community.Email.Tests
                 SMTPServer = SMTPADDRESS,
                 Port = PORT,
                 UseSsl = USESSL,
-                UseWindowsAuthentication = USEWINDOWSAUTHENTICATION,
+                AcceptAllCerts = ACCEPTALLCERTS
             };
 
         }

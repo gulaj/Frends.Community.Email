@@ -62,7 +62,7 @@ Settings for connecting to SMTP server
 | Smtp server | string | SMTP server address | smtp.somedomain.com |
 | Port | int | SMTP server port | 25 |
 | Use ssl| bool | Set this true if SMTP expects to be connected using SSL | false |
-| Use windows authentication | bool | Set this true if you want to use windows authentication to authenticate to SMTP server | false |
+| AcceptAllCerts |bool |Accept all certificates when connecting the host, if true, will accept event invalid certificates. If false, will accept self-signed certificates if the root is untrusted| false |
 | User name| string | Usable when windows authentication is set false. Use this username to log in to the SMTP server | user |
 | Password | string | Usable when windows authentication is set false. Use this password to log in to the SMTP server | password |
 
@@ -227,4 +227,5 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 2.2.0 | Ported version for linux agent |
 | 2.3.0 | Tighter MAilKit dependency rules |
 | 2.4.0 | Now when Windows Authentication is disabled empty credentials are not set and thus frends Agent's credentials are used. |
+| 2.5.0 | Changed the EmailTask to use only MailKit and replaced System.Net.Mail SmtpClient to MailKit.Net.Smtp SmtpClient. |
 
