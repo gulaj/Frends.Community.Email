@@ -8,25 +8,25 @@ using System.ComponentModel.DataAnnotations;
 namespace Frends.Community.Email
 {
     /// <summary>
-    /// Settings for IMAP and POP3 servers
+    /// Settings for IMAP and POP3 servers.
     /// </summary>
     public class ImapSettings
     {
         /// <summary>
-        /// Host address
+        /// Host address.
         /// </summary>
         [DefaultValue("imap.frends.com")]
         [DisplayFormat(DataFormatString = "Text")]
         public string Host { get; set; }
 
         /// <summary>
-        /// Host port
+        /// Host port.
         /// </summary>
         [DefaultValue(993)]
         public int Port { get; set; }
 
         /// <summary>
-        /// Use SSL or not
+        /// Use SSL or not?
         /// </summary>
         [DefaultValue(true)]
         public bool UseSSL { get; set; }
@@ -38,36 +38,37 @@ namespace Frends.Community.Email
         public bool AcceptAllCerts { get; set; }
 
         /// <summary>
-        /// Account name to login with
+        /// Account name to login with.
         /// </summary>
         [DefaultValue("accountName")]
         [DisplayFormat(DataFormatString = "Text")]
         public string UserName { get; set; }
 
         /// <summary>
-        /// Account password
+        /// Account password.
         /// </summary>
         [PasswordPropertyText]
         public string Password { get; set; }
     }
 
     /// <summary>
-    /// Exchange server specific options
+    /// Exchange server specific options.
     /// </summary>
     public class ExchangeSettings
     {
         /// <summary>
-        /// Which exchange server to target
+        /// Which exchange server to target?
         /// </summary>
         public ExchangeServerVersion ExchangeServerVersion { get; set; }
 
         /// <summary>
-        /// If true, will try to auto discover server address from user name. In this cae Host and Port values are not used.
+        /// If true, will try to auto discover server address from user name.
+        /// In this cae Host and Port values are not used.
         /// </summary>
         public bool UseAutoDiscover { get; set; }
 
         /// <summary>
-        /// Exchange server address
+        /// Exchange server address.
         /// </summary>
         [DefaultValue("exchange.frends.com")]
         [DisplayFormat(DataFormatString = "Text")]
@@ -82,14 +83,14 @@ namespace Frends.Community.Email
         public bool UseAgentAccount { get; set; }
 
         /// <summary>
-        /// Email account to use
+        /// Email account to use.
         /// </summary>
         [DefaultValue("agent@frends.com")]
         [DisplayFormat(DataFormatString = "Text")]
         public string Username { get; set; }
 
         /// <summary>
-        /// Account password
+        /// Account password.
         /// </summary>
         [PasswordPropertyText]
         [UIHint(nameof(UseAgentAccount), "", false)]
@@ -97,7 +98,8 @@ namespace Frends.Community.Email
 
 
         /// <summary>
-        /// Inbox to read emails from. If empty reads from default mailbox.
+        /// Inbox to read emails from.
+        /// If empty reads from default mailbox.
         /// </summary>
         [DefaultValue("agentinbox@frends.com")]
         [DisplayFormat(DataFormatString = "Text")]
@@ -105,7 +107,7 @@ namespace Frends.Community.Email
     }
 
     /// <summary>
-    /// Which exchange version to target
+    /// Which exchange version to target?
     /// </summary>
     public enum ExchangeServerVersion
     {
@@ -119,12 +121,12 @@ namespace Frends.Community.Email
     }
 
     /// <summary>
-    /// Options related to IMAP reading
+    /// Options related to IMAP reading.
     /// </summary>
     public class ImapOptions
     {
         /// <summary>
-        /// Maximum number of emails to retrieve
+        /// Maximum number of emails to retrieve.
         /// </summary>
         [DefaultValue(10)]
         public int MaxEmails { get; set; }
@@ -135,23 +137,23 @@ namespace Frends.Community.Email
         public bool GetOnlyUnreadEmails { get; set; }
 
         /// <summary>
-        /// If true, then marks queried emails as read
+        /// If true, then marks queried emails as read.
         /// </summary>
         public bool MarkEmailsAsRead { get; set; }
 
         /// <summary>
-        /// If true, then received emails will be hard deleted
+        /// If true, then received emails will be hard deleted.
         /// </summary>
         public bool DeleteReadEmails { get; set; }
     }
 
     /// <summary>
-    /// Options related to Exchange reading
+    /// Options related to Exchange reading.
     /// </summary>
     public class ExchangeOptions
     {
         /// <summary>
-        /// Maximum number of emails to retrieve
+        /// Maximum number of emails to retrieve.
         /// </summary>
         [DefaultValue(10)]
         public int MaxEmails { get; set; }
@@ -162,32 +164,33 @@ namespace Frends.Community.Email
         public bool GetOnlyUnreadEmails { get; set; }
 
         /// <summary>
-        /// If true, then marks queried emails as read
+        /// If true, then marks queried emails as read.
         /// </summary>
         public bool MarkEmailsAsRead { get; set; }
 
         /// <summary>
-        /// If true, then received emails will be hard deleted
+        /// If true, then received emails will be hard deleted.
         /// </summary>
         public bool DeleteReadEmails { get; set; }
 
         /// <summary>
-        /// Optional. If a sender is given, it will be used to filter emails.
+        /// Optional.
+        /// If a sender is given, it will be used to filter emails.
         /// </summary>
         [DefaultValue("")]
         [DisplayFormat(DataFormatString = "Text")]
         public string EmailSenderFilter { get; set; }
 
         /// <summary>
-        /// Optional. If a subject is given, it will be used to filter emails.
+        /// Optional.
+        /// If a subject is given, it will be used to filter emails.
         /// </summary>
         [DefaultValue("")]
         [DisplayFormat(DataFormatString = "Text")]
         public string EmailSubjectFilter { get; set; }
 
         /// <summary>
-        /// If true, the task throws an error if no messages matching
-        /// search criteria were found.
+        /// If true, the task throws an error if no messages matching search criteria were found.
         /// </summary>
         public bool ThrowErrorIfNoMessagesFound { get; set; }
 
@@ -211,61 +214,60 @@ namespace Frends.Community.Email
         public string AttachmentSaveDirectory { get; set; }
 
         /// <summary>
-        /// Should the attachment be overwritten, if the save directory
-        /// already contains an attachment with the same name? If no,
-        /// a GUID will be added to the filename.
+        /// Should the attachment be overwritten, if the save directory already contains an attachment with the same name?
+        /// If no, a GUID will be added to the filename.
         /// </summary>
         [UIHint(nameof(IgnoreAttachments), "", false)]
         public bool OverwriteAttachment { get; set; }
     }
 
     /// <summary>
-    /// Output result for read operation
+    /// Output result for read operation.
     /// </summary>
     public class EmailMessageResult
     {
         /// <summary>
-        /// Email id
+        /// Email ID.
         /// </summary>
         public string Id { get; set; }
 
         /// <summary>
-        /// To-field from email
+        /// To-field from email.
         /// </summary>
         public string To { get; set; }
 
         /// <summary>
-        /// Cc-field from email
+        /// CC-field from email.
         /// </summary>
         public string Cc { get; set; }
 
         /// <summary>
-        /// From-field from email
+        /// From-field from email.
         /// </summary>
         public string From { get; set; }
 
         /// <summary>
-        /// Email received date
+        /// Email received date.
         /// </summary>
         public DateTime Date { get; set; }
 
         /// <summary>
-        /// Title of the email
+        /// Title of the email.
         /// </summary>
         public string Subject { get; set; }
 
         /// <summary>
-        /// Body of the email as text
+        /// Body of the email as text.
         /// </summary>
         public string BodyText { get; set; }
 
         /// <summary>
-        /// Body html is available
+        /// Body HTML is available.
         /// </summary>
         public string BodyHtml { get; set; }
 
         /// <summary>
-        /// Attachment download path
+        /// Attachment download path.
         /// </summary>
         public List<string> AttachmentSaveDirs { get; set; }
     }
