@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace Frends.Community.Email.Tests
 {
@@ -31,7 +30,7 @@ namespace Frends.Community.Email.Tests
                 IgnoreAttachments = true
             };
 
-            List<EmailMessageResult> result = ReadEmailTask.ReadEmailFromExchangeServer(settings, options);
+            var result = ReadEmailTask.ReadEmailFromExchangeServer(settings, options);
 
             Assert.That(result.Count, Is.EqualTo(1));
         }

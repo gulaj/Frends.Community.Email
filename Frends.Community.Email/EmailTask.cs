@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Net;
 using System.Threading;
 using System;
-using System.Text;
 using MimeKit;
 using MailKit;
 using MailKit.Net.Smtp;
@@ -30,22 +29,20 @@ namespace Frends.Community.Email
 
             if (attachments != null)
             {
-                // email object is created using BodyBuilder
+                // Email object is created using BodyBuilder.
                 var builder = new BodyBuilder();
 
-                if (message.IsMessageHtml)
-                    builder.HtmlBody = string.Format(message.Message);
-                else
-                    builder.TextBody = string.Format(message.Message);
+                if (message.IsMessageHtml) builder.HtmlBody = string.Format(message.Message);
+                else builder.TextBody = string.Format(message.Message);
 
                 foreach (var attachment in attachments)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (attachment.AttachmentType == AttachmentType.FileAttachment)
                     {
-                        ICollection<string> allAttachmentFilePaths = GetAttachmentFiles(attachment.FilePath);
+                        var allAttachmentFilePaths = GetAttachmentFiles(attachment.FilePath);
 
-                        if (attachment.ThrowExceptionIfAttachmentNotFound && allAttachmentFilePaths.Count == 0)
-                            throw new FileNotFoundException(string.Format("The given filepath \"{0}\" had no matching files", attachment.FilePath), attachment.FilePath);
+                        if (attachment.ThrowExceptionIfAttachmentNotFound && allAttachmentFilePaths.Count == 0) throw new FileNotFoundException(string.Format("The given filepath \"{0}\" had no matching files", attachment.FilePath), attachment.FilePath);
 
                         if (allAttachmentFilePaths.Count == 0 && !attachment.SendIfNoAttachmentsFound)
                         {
@@ -54,15 +51,12 @@ namespace Frends.Community.Email
                             return output;
                         }
 
-                        foreach (var filePath in allAttachmentFilePaths)
-                        {
-                            builder.Attachments.Add(filePath);
-                        }
+                        foreach (var filePath in allAttachmentFilePaths) builder.Attachments.Add(filePath);
                     }
 
                     if (attachment.AttachmentType == AttachmentType.AttachmentFromString)
                     {
-                        //Create attachment only if content is not empty
+                        // Create attachment only if content is not empty.
                         if (!string.IsNullOrEmpty(attachment.stringAttachment.FileContent))
                         {
                             var path = CreateTemporaryFile(attachment);
@@ -81,31 +75,21 @@ namespace Frends.Community.Email
                     : new TextPart(MimeKit.Text.TextFormat.Plain) { Text = message.Message };
             }
 
-            // Initialize new MailKit SmtpClient
+            // Initialize new MailKit SmtpClient.
             using (var client = new SmtpClient())
             {
-                // Check if UseSsl is enabled and use SslOnConnect if true, else StartTls
-                var secureSocketOption = (SMTPSettings.UseSsl) ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls;
+                // Accept all certs?
+                if (SMTPSettings.AcceptAllCerts) client.ServerCertificateValidationCallback = (s, x509certificate, x590chain, sslPolicyErrors) => true;
+                else client.ServerCertificateValidationCallback = MailService.DefaultServerCertificateValidationCallback;
 
-                // accept all certs?
-                if (SMTPSettings.AcceptAllCerts)
-                {
-                    client.ServerCertificateValidationCallback = (s, x509certificate, x590chain, sslPolicyErrors) => true;
-                }
-                else
-                {
-                    client.ServerCertificateValidationCallback = MailService.DefaultServerCertificateValidationCallback;
-                }
+                if (SMTPSettings.UseSsl) client.Connect(SMTPSettings.SMTPServer, SMTPSettings.Port, SecureSocketOptions.SslOnConnect);
+                else client.Connect(SMTPSettings.SMTPServer, SMTPSettings.Port);
 
-                client.Connect(SMTPSettings.SMTPServer, SMTPSettings.Port, secureSocketOption);
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                if (string.IsNullOrEmpty(SMTPSettings.UserName) || string.IsNullOrEmpty(SMTPSettings.Password))
-                    throw new ArgumentException("SMTP credentials were not given for authentication.");
+                if (string.IsNullOrEmpty(SMTPSettings.UserName) || string.IsNullOrEmpty(SMTPSettings.Password)) throw new ArgumentException("SMTP credentials were not given for authentication.");
 
                 client.Authenticate(new NetworkCredential(SMTPSettings.UserName, SMTPSettings.Password));
-
-                cancellationToken.ThrowIfCancellationRequested();
 
                 client.Send(mail);
 
@@ -120,58 +104,51 @@ namespace Frends.Community.Email
             return output;
         }
 
+        #region HelperMethods
+
         /// <summary>
-        /// Create MimeMessage
+        /// Create MimeMessage.
         /// </summary>
         private static MimeMessage CreateMimeMessage([PropertyTab] Input message)
         {
-            //split recipients, either by comma or semicolon
+            // Split recipients, either by comma or semicolon.
             var separators = new[] { ',', ';' };
 
-            string[] recipients = message.To.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-            string[] ccRecipients = message.Cc.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-            string[] bccRecipients = message.Bcc.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            var recipients = message.To.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            var ccRecipients = message.Cc.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            var bccRecipients = message.Bcc.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
-            //Create mail object
+            // Create mail object.
             var mail = new MimeMessage();
             mail.From.Add(new MailboxAddress(message.SenderName, message.From));
             mail.Subject = message.Subject;
 
-            //Add recipients
-            foreach (var recipientAddress in recipients)
-            {
-                mail.To.Add(MailboxAddress.Parse(recipientAddress));
-            }
-            //Add CC recipients
-            foreach (var ccRecipient in ccRecipients)
-            {
-                mail.Cc.Add(MailboxAddress.Parse(ccRecipient));
-            }
-            //Add BCC recipients
-            foreach (var bccRecipient in bccRecipients)
-            {
-                mail.Bcc.Add(MailboxAddress.Parse(bccRecipient));
-            }
+            // Add recipients.
+            foreach (var recipientAddress in recipients) mail.To.Add(MailboxAddress.Parse(recipientAddress));
+
+            // Add CC recipients.
+            foreach (var ccRecipient in ccRecipients) mail.Cc.Add(MailboxAddress.Parse(ccRecipient));
+
+            // Add BCC recipients.
+            foreach (var bccRecipient in bccRecipients) mail.Bcc.Add(MailboxAddress.Parse(bccRecipient));
 
             return mail;
         }
 
         /// <summary>
-        /// Gets all actual file names of attachments matching given file path
+        /// Gets all actual file names of attachments matching given file path.
         /// </summary>
         /// <param name="filePath"></param>
         private static ICollection<string> GetAttachmentFiles(string filePath)
         {
-            string folder = Path.GetDirectoryName(filePath);
-            string fileMask = Path.GetFileName(filePath) != "" ? Path.GetFileName(filePath) : "*";
-
-            string[] filePaths = Directory.GetFiles(folder, fileMask);
-
+            var folder = Path.GetDirectoryName(filePath);
+            var fileMask = Path.GetFileName(filePath) != "" ? Path.GetFileName(filePath) : "*";
+            var filePaths = Directory.GetFiles(folder, fileMask);
             return filePaths;
         }
 
         /// <summary>
-        /// Create temp file of attachment from string 
+        /// Create temp file of attachment from string.
         /// </summary>
         /// <param name="attachment"></param>
         private static string CreateTemporaryFile(Attachment attachment)
@@ -180,26 +157,22 @@ namespace Frends.Community.Email
             var filePath = Path.Combine(TempWorkDirBase, attachment.stringAttachment.FileName);
             var content = attachment.stringAttachment.FileContent;
 
-            using (StreamWriter sw = File.CreateText(filePath))
-            {
-                sw.Write(content);
-            }
+            using (StreamWriter sw = File.CreateText(filePath)) sw.Write(content);
 
             return filePath;
         }
 
         /// <summary>
-        /// Remove the temporary workdir
+        /// Remove the temporary workdir.
         /// </summary>
         /// <param name="tempWorkDir"></param>
         private static void CleanUpTempWorkDir(string tempWorkDir)
         {
-            if (!string.IsNullOrEmpty(tempWorkDir) && Directory.Exists(tempWorkDir))
-                Directory.Delete(tempWorkDir, true);
+            if (!string.IsNullOrEmpty(tempWorkDir) && Directory.Exists(tempWorkDir)) Directory.Delete(tempWorkDir, true);
         }
 
         /// <summary>
-        /// Create temperary directory for temp file
+        /// Create temperary directory for temp file.
         /// </summary>
         private static string InitializeTemporaryWorkPath()
         {
@@ -207,6 +180,8 @@ namespace Frends.Community.Email
             Directory.CreateDirectory(tempWorkDir);
 
             return tempWorkDir;
-        } 
+        }
+
+        #endregion
     }
 }

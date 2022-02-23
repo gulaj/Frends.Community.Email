@@ -8,19 +8,19 @@ namespace Frends.Community.Email
     public class Input
     {
         /// <summary>
-        /// Recipient addresses separated by ',' or ';'
+        /// Recipient addresses separated by ',' or ';'.
         /// </summary>
         [DefaultValue("\"jane.doe@somedomain.com\"")]
         public string To { get; set; }
 
         /// <summary>
-        /// Cc recipient addresses separated by ',' or ';'
+        /// Cc recipient addresses separated by ',' or ';'.
         /// </summary>
         [DefaultValue("\"jane.doe@somedomain.com\"")]
         public string Cc { get; set; }
 
         /// <summary>
-        /// Bcc recipient addresses separated by ',' or ';'
+        /// Bcc recipient addresses separated by ',' or ';'.
         /// </summary>
         [DefaultValue("\"jane.doe@somedomain.com\"")]
         public string Bcc { get; set; }
@@ -56,7 +56,8 @@ namespace Frends.Community.Email
         public bool IsMessageHtml { get; set; }
 
         /// <summary>
-        /// Encoding of message body and subject. Use following table's name column for other options. https://msdn.microsoft.com/en-us/library/system.text.encoding(v=vs.110).aspx#Anchor_5 
+        /// Encoding of message body and subject.
+        /// Use following table's name column for other options: https://msdn.microsoft.com/en-us/library/system.text.encoding(v=vs.110).aspx#Anchor_5 
         /// </summary>
         [DefaultValue("\"utf-8\"")]
         public string MessageEncoding { get; set; }
@@ -90,13 +91,13 @@ namespace Frends.Community.Email
         public bool AcceptAllCerts { get; set; }
 
         /// <summary>
-        /// Use this username to log in to the SMTP server
+        /// Use this username to log in to the SMTP server.
         /// </summary>
         [DefaultValue("\"\"")]
         public string UserName { get; set; }
 
         /// <summary>
-        /// Use this password to log in to the SMTP server
+        /// Use this password to log in to the SMTP server.
         /// </summary>
         [PasswordPropertyText(true)]
         [DefaultValue("\"\"")]
@@ -126,7 +127,9 @@ namespace Frends.Community.Email
         public AttachmentFromString stringAttachment { get; set; }
 
         /// <summary>
-        /// Attachment file's path. Uses Directory.GetFiles(string, string) as a pattern matching technique. See https://msdn.microsoft.com/en-us/library/wz42302f(v=vs.110).aspx.
+        /// Attachment file's path
+        /// Uses Directory.GetFiles(string, string) as a pattern matching technique.
+        /// See https://msdn.microsoft.com/en-us/library/wz42302f(v=vs.110).aspx.
         /// Exception: If the path ends in a directory, all files in that folder are added as attachments.
         /// </summary>
         [DefaultValue("\"\"")]
@@ -161,13 +164,13 @@ namespace Frends.Community.Email
     public class AttachmentFromString
     {
         /// <summary>
-        /// Content of the attachment file
+        /// Content of the attachment file.
         /// </summary>
         [DefaultValue("\"\"")]
         public string FileContent { get; set; }
 
         /// <summary>
-        /// Name of the attachment file
+        /// Name of the attachment file.
         /// </summary>
         [DefaultValue("\"\"")]
         public string FileName { get; set; }
