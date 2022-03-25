@@ -82,14 +82,32 @@ namespace Frends.Community.Email
                 if (SMTPSettings.AcceptAllCerts) client.ServerCertificateValidationCallback = (s, x509certificate, x590chain, sslPolicyErrors) => true;
                 else client.ServerCertificateValidationCallback = MailService.DefaultServerCertificateValidationCallback;
 
-                if (SMTPSettings.UseSsl) client.Connect(SMTPSettings.SMTPServer, SMTPSettings.Port, SecureSocketOptions.SslOnConnect);
-                else client.Connect(SMTPSettings.SMTPServer, SMTPSettings.Port);
+                var secureSocketOption = new SecureSocketOptions();
+                switch (SMTPSettings.SecureSocket)
+                {
+                    case SecureSocketOption.None:
+                        secureSocketOption = SecureSocketOptions.None;
+                        break;
+                    case SecureSocketOption.SslOnConnect:
+                        secureSocketOption = SecureSocketOptions.SslOnConnect;
+                        break;
+                    case SecureSocketOption.StartTls:
+                        secureSocketOption = SecureSocketOptions.StartTls;
+                        break;
+                    case SecureSocketOption.StartTlsWhenAvailable:
+                        secureSocketOption = SecureSocketOptions.StartTlsWhenAvailable;
+                        break;
+                    default:
+                        secureSocketOption = SecureSocketOptions.Auto;
+                        break;
+                }
+
+                client.Connect(SMTPSettings.SMTPServer, SMTPSettings.Port, secureSocketOption);
 
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                if (string.IsNullOrEmpty(SMTPSettings.UserName) || string.IsNullOrEmpty(SMTPSettings.Password)) throw new ArgumentException("SMTP credentials were not given for authentication.");
-
-                client.Authenticate(new NetworkCredential(SMTPSettings.UserName, SMTPSettings.Password));
+                if (!string.IsNullOrEmpty(SMTPSettings.UserName) && !string.IsNullOrEmpty(SMTPSettings.Password))
+                    client.Authenticate(new NetworkCredential(SMTPSettings.UserName, SMTPSettings.Password));
 
                 client.Send(mail);
 

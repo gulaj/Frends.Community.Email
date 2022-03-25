@@ -61,10 +61,10 @@ Settings for connecting to SMTP server.
 |----------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|
 | Smtp server    | string | SMTP server address.                                                                                                                                                        | smtp.somedomain.com |
 | Port           | int    | SMTP server port.                                                                                                                                                           | 25                  |
-| Use ssl        | bool   | Set this true if SMTP expects to be connected using SSL.                                                                                                                    | false               |
+| SecureSocket   | enum   | Choose what SecureSocketOptions to use, default: SecureSocketOptions.Auto                                                                                                   | SecureSocketOptions.None |
 | AcceptAllCerts | bool   | Accept all certificates when connecting the host, if true, will accept event invalid certificates. If false, will accept self-signed certificates if the root is untrusted. | false               |
-| User name      | string | Usable when windows authentication is set false. Use this username to log in to the SMTP server.                                                                            | user                |
-| Password       | string | Usable when windows authentication is set false. Use this password to log in to the SMTP server.                                                                            | password            |
+| User name      | string | Use this username to log in to the SMTP server.                                                                            | user                |
+| Password       | string | Use this password to log in to the SMTP server.                                                                            | password            |
 
 
 ### Result
@@ -85,10 +85,10 @@ Read emails using IMAP server.
 |----------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
 | Host           | string | Host address.                                                                                                                                                               | imap.frends.com |
 | Port           | int    | Host port.                                                                                                                                                                  | 993             |
-| UseSSL         | bool   | Use SSL when connecting host.                                                                                                                                               | true            |
+| UseSSL         | bool   | Use SSL when connecting host.																																				| true            |
 | AcceptAllCerts | bool   | Accept all certificates when connecting the host, if true, will accept event invalid certificates. If false, will accept self-signed certificates if the root is untrusted. | false           |
-| UserName       | string | Account name to login with.                                                                                                                                                 | emailUser       |
-| Password       | string | Account password.                                                                                                                                                           | ***             |
+| UserName       | string | Account name to login with.                                                                                                                                | emailUser       |
+| Password       | string | Account password.                                                                                                                                          | ***             |
 
 ### Options
 

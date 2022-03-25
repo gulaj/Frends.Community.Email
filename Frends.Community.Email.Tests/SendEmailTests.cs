@@ -61,7 +61,7 @@ namespace Frends.Community.Email.Tests
                 Password = PASSWORD,
                 SMTPServer = SMTPADDRESS,
                 Port = PORT,
-                UseSsl = USESSL,
+                SecureSocket = SecureSocketOption.Auto,
                 AcceptAllCerts = ACCEPTALLCERTS
             };
 
