@@ -228,3 +228,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 2.3.0   | Tighter MAilKit dependency rules.                                                                                       |
 | 2.4.0   | Now when Windows Authentication is disabled empty credentials are not set and thus frends Agent's credentials are used. |
 | 2.5.0   | Changed the EmailTask to use only MailKit and replaced System.Net.Mail SmtpClient to MailKit.Net.Smtp SmtpClient.       |
+| 2.5.1   | Changed EmailTask to not need credentials and added selector for SecureSocketOptions and removed UseSsl bool attribute  |
