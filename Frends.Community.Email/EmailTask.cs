@@ -27,13 +27,13 @@ namespace Frends.Community.Email
 
             var mail = CreateMimeMessage(message);
 
-            if (attachments != null)
+            if (attachments != null && attachments.Length > 0)
             {
                 // Email object is created using BodyBuilder.
                 var builder = new BodyBuilder();
 
-                if (message.IsMessageHtml) builder.HtmlBody = string.Format(message.Message);
-                else builder.TextBody = string.Format(message.Message);
+                if (message.IsMessageHtml) builder.HtmlBody = message.Message;
+                else builder.TextBody = message.Message;
 
                 foreach (var attachment in attachments)
                 {
