@@ -20,6 +20,17 @@ namespace Frends.Community.Email.Tests
         private readonly string _applicationID = Environment.GetEnvironmentVariable("Exchange_Application_ID");
         private readonly string _tenantID = Environment.GetEnvironmentVariable("Exchange_Tenant_ID");
 
+        [OneTimeSetUp]
+        public void OneTimeSetup()
+        {
+            if (string.IsNullOrEmpty(_applicationID) ||
+                string.IsNullOrEmpty(_password) ||
+                string.IsNullOrEmpty(_tenantID))
+            {
+                throw new ArgumentException("Password, Application ID or Tenant ID is missing. Please check environment variables.");
+            }
+        }
+
         [Test]
         public async Task ReadEmailFromExchangeServer_ShouldReadOneItemTest()
         {
