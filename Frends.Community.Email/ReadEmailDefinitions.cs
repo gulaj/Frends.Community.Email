@@ -83,6 +83,7 @@ namespace Frends.Community.Email
         /// Mailbox from where the emails will be read.
         /// </summary>
         [DefaultValue("inbox")]
+        [DisplayFormat(DataFormatString = "Text")]
         public string Mailbox { get; set; }
     }
 

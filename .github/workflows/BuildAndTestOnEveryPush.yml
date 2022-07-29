@@ -20,6 +20,10 @@ jobs:
       run: dotnet build
     
     - name: Test
+      env:
+        Exchange_User_Password: ${{ secrets.EXCHANGE_USER_PASSWORD }}
+        Exchange_Application_ID: ${{ secrets.EXCHANGE_APPLICATION_ID }}
+        Exchange_Tenant_ID: ${{ secrets.EXCHANGE_TENANT_ID }}
       run: dotnet test
       
     - name: Pack release version of task
