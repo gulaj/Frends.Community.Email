@@ -8,6 +8,12 @@ using MimeKit;
 using MailKit;
 using MailKit.Net.Smtp;
 using MailKit.Security;
+using System.Threading.Tasks;
+using Azure.Identity;
+using Microsoft.Graph;
+using System.Text;
+using File = System.IO.File;
+using Directory = System.IO.Directory;
 
 #pragma warning disable 1591
 
@@ -24,7 +30,6 @@ namespace Frends.Community.Email
         public static Output SendEmail([PropertyTab]Input message, [PropertyTab]Attachment[] attachments, [PropertyTab]Options SMTPSettings, CancellationToken cancellationToken)
         {
             var output = new Output();
-
             var mail = CreateMimeMessage(message);
 
             if (attachments != null && attachments.Length > 0)
@@ -37,7 +42,6 @@ namespace Frends.Community.Email
 
                 foreach (var attachment in attachments)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
                     if (attachment.AttachmentType == AttachmentType.FileAttachment)
                     {
                         var allAttachmentFilePaths = GetAttachmentFiles(attachment.FilePath);
@@ -51,13 +55,17 @@ namespace Frends.Community.Email
                             return output;
                         }
 
-                        foreach (var filePath in allAttachmentFilePaths) builder.Attachments.Add(filePath);
+                        foreach (var filePath in allAttachmentFilePaths)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            builder.Attachments.Add(filePath);
+                        }
                     }
 
                     if (attachment.AttachmentType == AttachmentType.AttachmentFromString)
                     {
                         // Create attachment only if content is not empty.
-                        if (!string.IsNullOrEmpty(attachment.stringAttachment.FileContent))
+                        if (!string.IsNullOrEmpty(attachment.StringAttachment.FileContent))
                         {
                             var path = CreateTemporaryFile(attachment);
                             builder.Attachments.Add(path);
@@ -106,8 +114,7 @@ namespace Frends.Community.Email
 
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                if (!string.IsNullOrEmpty(SMTPSettings.UserName) && !string.IsNullOrEmpty(SMTPSettings.Password))
-                    client.Authenticate(new NetworkCredential(SMTPSettings.UserName, SMTPSettings.Password));
+                client.Authenticate(new NetworkCredential(SMTPSettings.UserName, SMTPSettings.Password));
 
                 client.Send(mail);
 
@@ -119,6 +126,126 @@ namespace Frends.Community.Email
             output.EmailSent = true;
             output.StatusString = string.Format("Email sent to: {0}", mail.To.ToString());
 
+            return output;
+        }
+
+        /// <summary>
+        /// Sends email message to Exchange with optional attachments. See https://github.com/CommunityHiQ/Frends.Community.Email
+        /// </summary>
+        /// <returns>
+        /// Object { bool EmailSent, string StatusString }
+        /// </returns>
+        public static async Task<Output> SendEmailToExchangeServer([PropertyTab] ExchangeInput input, [PropertyTab] Attachment[] attachments, [PropertyTab] ExchangeServer settings, CancellationToken cancellationToken)
+        {
+            var output = new Output();
+
+            if (string.IsNullOrWhiteSpace(settings.AppId) || string.IsNullOrWhiteSpace(settings.TenantId) || string.IsNullOrWhiteSpace(settings.Username) || string.IsNullOrWhiteSpace(settings.Password))
+                throw new ArgumentException("Invalid Application ID, Tenant ID, Username or Password. Please check Exchange settings.");
+
+            if (string.IsNullOrWhiteSpace(input.Subject) || string.IsNullOrWhiteSpace(input.Message) || string.IsNullOrWhiteSpace(input.To))
+                throw new ArgumentException("Subject, message, and To-recipient cannot be empty.");
+
+            var credentials = new UsernamePasswordCredential(settings.Username, settings.Password, settings.TenantId, settings.AppId);
+            var graph = new GraphServiceClient(credentials);
+
+            var encoding = GetEncoding(input.MessageEncoding);
+            var bytes = Encoding.Default.GetBytes(input.Message);
+            var encodedmessage = encoding.GetString(bytes);
+
+            var messageBody = new ItemBody
+            {
+                ContentType = input.IsMessageHtml ? BodyType.Html : BodyType.Text,
+                Content = encodedmessage
+            };
+
+            var recipients = input.To.Split(new char[] { ',', ';'}, StringSplitOptions.RemoveEmptyEntries);
+
+            var to = new List<Recipient>();
+            var cc = new List<Recipient>();
+            var bcc = new List<Recipient>();
+
+            foreach (var receiver in recipients) to.Add(new Recipient { EmailAddress = new EmailAddress { Address = receiver } });
+
+            if (!string.IsNullOrWhiteSpace(input.Cc))
+            {
+                recipients = input.Cc.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var receiver in recipients) cc.Add(new Recipient { EmailAddress = new EmailAddress { Address = receiver } });
+            }
+            if (!string.IsNullOrWhiteSpace(input.Bcc))
+            {
+                recipients = input.Bcc.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var receiver in recipients) bcc.Add(new Recipient { EmailAddress = new EmailAddress { Address = receiver } });
+            }
+
+            var attachmentList = new MessageAttachmentsCollectionPage();
+
+            if (attachments != null)
+            {
+                foreach (var attachment in attachments)
+                {
+                    if (attachment.AttachmentType == AttachmentType.FileAttachment)
+                    {
+                        var allAttachmentFilePaths = GetAttachmentFiles(attachment.FilePath);
+
+                        if (attachment.ThrowExceptionIfAttachmentNotFound && allAttachmentFilePaths.Count == 0) throw new FileNotFoundException(string.Format("The given filepath \"{0}\" had no matching files", attachment.FilePath), attachment.FilePath);
+
+                        if (allAttachmentFilePaths.Count == 0 && !attachment.SendIfNoAttachmentsFound)
+                        {
+                            output.StatusString = string.Format("No attachments found matching path \"{0}\". No email sent.", attachment.FilePath);
+                            output.EmailSent = false;
+                            return output;
+                        }
+
+                        foreach (var filePath in allAttachmentFilePaths)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            var attachmentContent = File.ReadAllBytes(filePath);
+                            var oneAttachment = new FileAttachment
+                            {
+                                ODataType = "#microsoft.graph.fileAttachment",
+                                ContentBytes = attachmentContent,
+                                ContentType = MimeTypes.GetMimeType(filePath),
+                                ContentId = "Something",
+                                Name = Path.GetFileName(filePath)
+                            };
+                            attachmentList.Add(oneAttachment);
+                        }
+                    }
+
+                    if (attachment.AttachmentType == AttachmentType.AttachmentFromString)
+                    {
+                        // Create attachment only if content is not empty.
+                        if (!string.IsNullOrEmpty(attachment.StringAttachment.FileContent))
+                        {
+                            var path = CreateTemporaryFile(attachment);
+                            var attachmentContent = File.ReadAllBytes(path);
+                            var oneAttachment = new FileAttachment
+                            {
+                                ODataType = "#microsoft.graph.fileAttachment",
+                                ContentBytes = attachmentContent,
+                                ContentType = MimeTypes.GetMimeType(path),
+                                Name = Path.GetFileName(path)
+                            };
+                            attachmentList.Add(oneAttachment);
+                            CleanUpTempWorkDir(path);
+                        }
+                    }
+                }
+            }
+
+            var message = new Message
+            {
+                Subject = input.Subject,
+                Body = messageBody,
+                ToRecipients = to,
+                CcRecipients = cc,
+                BccRecipients = bcc,
+                Attachments = attachmentList
+            };
+
+            await Task.Run(() => graph.Me.SendMail(message, true).Request().PostAsync(cancellationToken).Wait());
+            output.EmailSent = true;
+            output.StatusString = string.Format($"Email sent to: {input.To}");
             return output;
         }
 
@@ -172,10 +299,10 @@ namespace Frends.Community.Email
         private static string CreateTemporaryFile(Attachment attachment)
         {
             var TempWorkDirBase = InitializeTemporaryWorkPath();
-            var filePath = Path.Combine(TempWorkDirBase, attachment.stringAttachment.FileName);
-            var content = attachment.stringAttachment.FileContent;
+            var filePath = Path.Combine(TempWorkDirBase, attachment.StringAttachment.FileName);
+            var content = attachment.StringAttachment.FileContent;
 
-            using (StreamWriter sw = File.CreateText(filePath)) sw.Write(content);
+            using (var sw = File.CreateText(filePath)) sw.Write(content);
 
             return filePath;
         }
@@ -196,8 +323,26 @@ namespace Frends.Community.Email
         {
             var tempWorkDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(tempWorkDir);
-
             return tempWorkDir;
+        }
+
+        private static Encoding GetEncoding(string encoding)
+        {
+            switch (encoding.ToLower())
+            {
+                case "utf-8":
+                    return Encoding.UTF8;
+                case "ascii":
+                    return Encoding.ASCII;
+                case "utf-7":
+                    return Encoding.UTF7;
+                case "unicode":
+                    return Encoding.Unicode;
+                case "utf-32":
+                    return Encoding.UTF32;
+                default:
+                    return Encoding.Default;
+            }
         }
 
         #endregion

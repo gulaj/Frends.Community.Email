@@ -64,6 +64,53 @@ namespace Frends.Community.Email
 
     }
 
+    public class ExchangeInput
+    {
+        /// <summary>
+        /// Recipient addresses separated by ',' or ';'.
+        /// </summary>
+        [DefaultValue("\"jane.doe@somedomain.com\"")]
+        public string To { get; set; }
+
+        /// <summary>
+        /// Cc recipient addresses separated by ',' or ';'.
+        /// </summary>
+        [DefaultValue("\"jane.doe@somedomain.com\"")]
+        public string Cc { get; set; }
+
+        /// <summary>
+        /// Bcc recipient addresses separated by ',' or ';'.
+        /// </summary>
+        [DefaultValue("\"jane.doe@somedomain.com\"")]
+        public string Bcc { get; set; }
+
+        /// <summary>
+        /// Email message's subject.
+        /// </summary>
+        [DefaultValue("\"Hello Jane\"")]
+        public string Subject { get; set; }
+
+        /// <summary>
+        /// Body of the message.
+        /// </summary>
+        [DefaultValue("\"You've got mail!\"")]
+        public string Message { get; set; }
+
+        /// <summary>
+        /// Set this true if the message is HTML.
+        /// </summary>
+        [DefaultValue("false")]
+        public bool IsMessageHtml { get; set; }
+
+        /// <summary>
+        /// Encoding of message body and subject.
+        /// Use following table's name column for other options: https://msdn.microsoft.com/en-us/library/system.text.encoding(v=vs.110).aspx#Anchor_5 
+        /// </summary>
+        [DefaultValue("\"utf-8\"")]
+        public string MessageEncoding { get; set; }
+
+    }
+
     public class Options
     {
         /// <summary>
@@ -99,9 +146,35 @@ namespace Frends.Community.Email
         /// <summary>
         /// Use this password to log in to the SMTP server.
         /// </summary>
-        [PasswordPropertyText(true)]
+        [PasswordPropertyText]
         [DefaultValue("\"\"")]
         public string Password { get; set; }
+    }
+
+    public class ExchangeServer
+    {
+        /// <summary>
+        /// Username of the user.
+        /// </summary>
+        public string Username { get; set; }
+
+        /// <summary>
+        /// Password for the user.
+        /// </summary>
+        [PasswordPropertyText]
+        public string Password { get; set; }
+
+        /// <summary>
+        /// App ID for fetching access token.
+        /// </summary>
+        [DefaultValue("")]
+        public string AppId { get; set; }
+
+        /// <summary>
+        /// Tenant ID for fetching access token.
+        /// </summary>
+        [DefaultValue("")]
+        public string TenantId { get; set; }
     }
 
     public class Output
@@ -124,7 +197,7 @@ namespace Frends.Community.Email
         public AttachmentType AttachmentType { get; set; }
 
         [UIHint(nameof(AttachmentType), "", AttachmentType.AttachmentFromString)]
-        public AttachmentFromString stringAttachment { get; set; }
+        public AttachmentFromString StringAttachment { get; set; }
 
         /// <summary>
         /// Attachment file's path
@@ -187,6 +260,18 @@ namespace Frends.Community.Email
         /// the server, but only if the server supports the STARTTLS extension.
         /// </summary>
         StartTlsWhenAvailable
+    }
+
+    public enum AuthenticationMethod
+    {
+        /// <summary>
+        /// Username/password authentication
+        /// </summary>
+        Basic,
+        /// <summary>
+        /// Access token.
+        /// </summary>
+        OAuth
     }
 
     public class AttachmentFromString

@@ -4,6 +4,9 @@
 			"TaskMethod": "Frends.Community.Email.EmailTask.SendEmail"
 		},
 		{
+			"TaskMethod": "Frends.Community.Email.EmailTask.SendEmailToExchangeServer"
+		},
+		{
 			"TaskMethod": "Frends.Community.Email.ReadEmailTask.ReadEmailWithIMAP"
 		},
 		{

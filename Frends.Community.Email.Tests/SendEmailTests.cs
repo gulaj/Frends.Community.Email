@@ -21,7 +21,6 @@ namespace Frends.Community.Email.Tests
         private const string TOEMAILADDRESS = "test@test.com";
         private const string FROMEMAILADDRESS = "user@user.com";
         private const int PORT = 2525;
-        private const bool USESSL = false;
         private const bool ACCEPTALLCERTS = true;
         private const string TEMP_ATTACHMENT_SOURCE = "emailtestattachments";
         private const string TEST_FILE_NAME = "testattachment.txt";
@@ -111,7 +110,7 @@ namespace Frends.Community.Email.Tests
             var attachment = new Attachment()
             {
                 AttachmentType = AttachmentType.AttachmentFromString,
-                stringAttachment = fileAttachment
+                StringAttachment = fileAttachment
             };
             var Attachments = new Attachment[] { attachment};
 
