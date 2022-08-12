@@ -14,6 +14,7 @@ using Microsoft.Graph;
 using System.Text;
 using File = System.IO.File;
 using Directory = System.IO.Directory;
+using Azure.Core;
 
 #pragma warning disable 1591
 
@@ -145,7 +146,12 @@ namespace Frends.Community.Email
             if (string.IsNullOrWhiteSpace(input.Subject) || string.IsNullOrWhiteSpace(input.Message) || string.IsNullOrWhiteSpace(input.To))
                 throw new ArgumentException("Subject, message, and To-recipient cannot be empty.");
 
-            var credentials = new UsernamePasswordCredential(settings.Username, settings.Password, settings.TenantId, settings.AppId);
+            var options = new TokenCredentialOptions
+            {
+                AuthorityHost = AzureAuthorityHosts.AzurePublicCloud
+            };
+
+            var credentials = new UsernamePasswordCredential(settings.Username, settings.Password, settings.TenantId, settings.AppId, options);
             var graph = new GraphServiceClient(credentials);
 
             var encoding = GetEncoding(input.MessageEncoding);
@@ -242,8 +248,7 @@ namespace Frends.Community.Email
                 BccRecipients = bcc,
                 Attachments = attachmentList
             };
-
-            await Task.Run(() => graph.Me.SendMail(message, true).Request().PostAsync(cancellationToken).Wait());
+            await graph.Me.SendMail(message, true).Request().PostAsync(cancellationToken);
             output.EmailSent = true;
             output.StatusString = string.Format($"Email sent to: {input.To}");
             return output;

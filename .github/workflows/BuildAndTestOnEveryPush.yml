@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  build:
+  UbuntuBuild:
     name: Build on ubuntu-latest
     runs-on: ubuntu-latest
     
@@ -20,14 +20,28 @@ jobs:
       run: dotnet build
     
     - name: Test
+      run: dotnet test --filter Frends.Community.Email.Tests.SendEmailTests
+
+  WindowsBuild:
+    needs: UbuntuBuild
+    name: Build on windows-latest
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Build
+      run: dotnet build
+    
+    - name: Test
       env:
         Exchange_User_Password: ${{ secrets.EXCHANGE_USER_PASSWORD }}
         Exchange_Application_ID: ${{ secrets.EXCHANGE_APPLICATION_ID }}
         Exchange_Tenant_ID: ${{ secrets.EXCHANGE_TENANT_ID }}
-      run: dotnet test
+      run: dotnet test --filter Frends.Community.Email.Tests.ExchangeEmailTests
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
       
     - name: Push NuGet package to the testfeed
-      run: dotnet nuget push Frends.Community.Email/bin/Release/Frends.Community.Email.*.nupkg  --api-key ${{ secrets.COMMUNITY_FEED_API_KEY }} --source https://www.myget.org/F/frends-community-test/api/v2/package --symbol-source https://www.myget.org/F/frends-community-test/symbols/api/v2/package
+      run: dotnet nuget push Frends.Community.Email\bin\Release\Frends.Community.Email.*.nupkg  --api-key ${{ secrets.COMMUNITY_FEED_API_KEY }} --source https://www.myget.org/F/frends-community-test/api/v2/package
