@@ -16,9 +16,9 @@ namespace Frends.Community.Email.Tests
     {
         private readonly string _mailbox = "inbox";
         private readonly string _username = "frends_exchange_test_user@frends.com";
-        private readonly string _password = "y6xE58eS0TP002XrXPXhRJigI";//Environment.GetEnvironmentVariable("Exchange_User_Password");
-        private readonly string _applicationID = "3c7863bb-dc4b-4b22-98e3-52ac77235bf2";//Environment.GetEnvironmentVariable("Exchange_Application_ID");
-        private readonly string _tenantID = "97759401-0ff9-42fb-8eae-9163e29d19bf";//Environment.GetEnvironmentVariable("Exchange_Tenant_ID");
+        private readonly string _password = Environment.GetEnvironmentVariable("Exchange_User_Password");
+        private readonly string _applicationID = Environment.GetEnvironmentVariable("Exchange_Application_ID");
+        private readonly string _tenantID = Environment.GetEnvironmentVariable("Exchange_Tenant_ID");
 
         [OneTimeSetUp]
         public void OneTimeSetup()
