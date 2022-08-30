@@ -262,18 +262,6 @@ namespace Frends.Community.Email
         StartTlsWhenAvailable
     }
 
-    public enum AuthenticationMethod
-    {
-        /// <summary>
-        /// Username/password authentication
-        /// </summary>
-        Basic,
-        /// <summary>
-        /// Access token.
-        /// </summary>
-        OAuth
-    }
-
     public class AttachmentFromString
     {
         /// <summary>

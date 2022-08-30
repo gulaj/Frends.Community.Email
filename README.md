@@ -227,6 +227,7 @@ ReadEmailFromExchangeServer task returns a list of EmailMessageResult objects. E
 | Id                 | string          | Email message id.                | ...                                                     |
 | To                 | string          | To field from email.             | agent@frends.com                                        |
 | Cc                 | string          | Cc field from email.             | doubleagent@frends.com                                  |
+| Bcc                | string          | Bcc field from email.            | sender@frends.com                                       |
 | From               | string          | From field from email.           | sender@frends.com                                       |
 | Date               | DateTime        | Received date.                   | ...                                                     |
 | Subject            | string          | Email subject.                   | Important email!                                        |
@@ -295,4 +296,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 2.5.1   | Changed EmailTask to not need credentials and added selector for SecureSocketOptions and removed UseSsl bool attribute                                    |
 | 2.5.2   | Fixed bug in SendEmail task. Now email message can contain curly brackets.                                                                                |
 | 2.6.0   | Added new task for sending email to Exchange server. Added possibility to use access token as authentication method for ReadEmailFromExchangeServer-task. |
-| 3.0.0   | ReadEmailFromExchangeServer modified to use Microsoft Graph. Added task for reading sending emails to Exchange.                                           |
+| 3.0.0   | ReadEmailFromExchangeServer modified to use Microsoft Graph. Added task for sending emails to Exchange server. Basic authentication removed from ReadEmailFromExchangeServer-task, which breaks the version 2.6.0 implementation. Migration from Basic authentication to OAuth is necessary when updating to 3.0.0. |

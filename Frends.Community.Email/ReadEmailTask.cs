@@ -134,33 +134,29 @@ namespace Frends.Community.Email
                 throw new Exception("No emails were found.");
             foreach (var email in messages)
             {
-                var attachmentPaths = new List<string>();
-                if (!options.IgnoreAttachments && email.HasAttachments.Value)
-                {
-                    if (string.IsNullOrEmpty(options.AttachmentSaveDirectory))
-                        throw new ArgumentException("No attachment save directory provided.");
-                    else if (!Directory.Exists(options.AttachmentSaveDirectory))
-                        Directory.CreateDirectory(options.AttachmentSaveDirectory);
+                var attachmentPaths = await WriteAttachments(email, options, graphServiceClient, cancellationToken);
+                
+                List<string> ToResult = new List<string>();
+                List<string> CcResult = new List<string>();
+                List<string> BccResult = new List<string>();
 
-                    var attachments = await graphServiceClient.Me.Messages[email.Id].Attachments.Request().GetAsync(cancellationToken);
+                foreach (var to in email.ToRecipients)
+                    ToResult.Add(to.EmailAddress.Address);
 
-                    foreach (FileAttachment attachment in attachments)
-                    {
-                        var path = Path.Combine(options.AttachmentSaveDirectory, attachment.Name);
-                        if (File.Exists(path) && options.OverwriteAttachment)
-                            File.Delete(path);
-                        else if (File.Exists(path))
-                            throw new Exception("Attachment file " + attachment.Name + " already exists in the given directory.");
-                        File.WriteAllBytes(path, attachment.ContentBytes);
-                        attachmentPaths.Add(path);
-                    }
-                }
+                if (email.CcRecipients != null)
+                    foreach (var cc in email.CcRecipients)
+                        CcResult.Add(cc.EmailAddress.Address);
+
+                if (email.BccRecipients != null)
+                    foreach (var bcc in email.BccRecipients)
+                        CcResult.Add(bcc.EmailAddress.Address);
 
                 var singleResult = new EmailMessageResult
                 {
                     Id = email.Id,
-                    To = string.Join(", ", email.ToRecipients),
-                    Cc = email.CcRecipients != null ? string.Join(", ", email.CcRecipients) : "",
+                    To = string.Join(", ", ToResult),
+                    Cc = CcResult.Count != 0 ? string.Join(", ", CcResult) : "",
+                    Bcc = BccResult.Count != 0 ? string.Join(", ", BccResult) : "",
                     From = email.From.EmailAddress.Address,
                     Date = email.ReceivedDateTime.Value.DateTime,
                     Subject = email.Subject,
@@ -209,5 +205,35 @@ namespace Frends.Community.Email
 
             return result;
         }
+
+        #region HelperMethods
+
+        private static async Task<List<string>> WriteAttachments(Message email, ExchangeOptions options, GraphServiceClient graphServiceClient, CancellationToken cancellationToken)
+        {
+            var attachmentPaths = new List<string>();
+            if (!options.IgnoreAttachments && email.HasAttachments.Value)
+            {
+                if (string.IsNullOrEmpty(options.AttachmentSaveDirectory))
+                    throw new ArgumentException("No attachment save directory provided.");
+                else if (!Directory.Exists(options.AttachmentSaveDirectory))
+                    Directory.CreateDirectory(options.AttachmentSaveDirectory);
+
+                var attachments = await graphServiceClient.Me.Messages[email.Id].Attachments.Request().GetAsync(cancellationToken);
+
+                foreach (FileAttachment attachment in attachments.Cast<FileAttachment>())
+                {
+                    var path = Path.Combine(options.AttachmentSaveDirectory, attachment.Name);
+                    if (File.Exists(path) && options.OverwriteAttachment)
+                        File.Delete(path);
+                    else if (File.Exists(path))
+                        throw new Exception("Attachment file " + attachment.Name + " already exists in the given directory.");
+                    File.WriteAllBytes(path, attachment.ContentBytes);
+                    attachmentPaths.Add(path);
+                }
+            }
+            return attachmentPaths;
+        }
+
+        #endregion
     }
 }

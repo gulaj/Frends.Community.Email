@@ -209,6 +209,11 @@ namespace Frends.Community.Email
         public string Cc { get; set; }
 
         /// <summary>
+        /// BCC-field from email.
+        /// </summary>
+        public string Bcc { get; set; }
+
+        /// <summary>
         /// From-field from email.
         /// </summary>
         public string From { get; set; }
