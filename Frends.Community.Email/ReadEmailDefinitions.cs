@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-#pragma warning disable 1591
-
 namespace Frends.Community.Email
 {
     /// <summary>
@@ -57,32 +55,6 @@ namespace Frends.Community.Email
     public class ExchangeSettings
     {
         /// <summary>
-        /// Which exchange server to target?
-        /// </summary>
-        public ExchangeServerVersion ExchangeServerVersion { get; set; }
-
-        /// <summary>
-        /// If true, will try to auto discover server address from user name.
-        /// In this cae Host and Port values are not used.
-        /// </summary>
-        public bool UseAutoDiscover { get; set; }
-
-        /// <summary>
-        /// Exchange server address.
-        /// </summary>
-        [DefaultValue("exchange.frends.com")]
-        [DisplayFormat(DataFormatString = "Text")]
-        [UIHint(nameof(UseAutoDiscover), "", false)]
-        public string ServerAddress { get; set; }
-
-        /// <summary>
-        /// Try to login with agent account?
-        /// </summary>
-        [DefaultValue(false)]
-        [Description("Authorize with agent account")]
-        public bool UseAgentAccount { get; set; }
-
-        /// <summary>
         /// Email account to use.
         /// </summary>
         [DefaultValue("agent@frends.com")]
@@ -93,31 +65,26 @@ namespace Frends.Community.Email
         /// Account password.
         /// </summary>
         [PasswordPropertyText]
-        [UIHint(nameof(UseAgentAccount), "", false)]
         public string Password { get; set; }
 
+        /// <summary>
+        /// App ID for fetching access token.
+        /// </summary>
+        [DefaultValue("")]
+        public string AppId { get; set; }
 
         /// <summary>
-        /// Inbox to read emails from.
-        /// If empty reads from default mailbox.
+        /// Tenant ID for fetching access token.
         /// </summary>
-        [DefaultValue("agentinbox@frends.com")]
+        [DefaultValue("")]
+        public string TenantId { get; set; }
+
+        /// <summary>
+        /// Mailbox from where the emails will be read.
+        /// </summary>
+        [DefaultValue("inbox")]
         [DisplayFormat(DataFormatString = "Text")]
         public string Mailbox { get; set; }
-    }
-
-    /// <summary>
-    /// Which exchange version to target?
-    /// </summary>
-    public enum ExchangeServerVersion
-    {
-        Exchange2007_SP1,
-        Exchange2010,
-        Exchange2010_SP1,
-        Exchange2010_SP2,
-        Exchange2013,
-        Exchange2013_SP1,
-        Office365
     }
 
     /// <summary>
@@ -240,6 +207,11 @@ namespace Frends.Community.Email
         /// CC-field from email.
         /// </summary>
         public string Cc { get; set; }
+
+        /// <summary>
+        /// BCC-field from email.
+        /// </summary>
+        public string Bcc { get; set; }
 
         /// <summary>
         /// From-field from email.

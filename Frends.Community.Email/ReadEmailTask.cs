@@ -1,321 +1,239 @@
-﻿using MailKit;
+﻿using Azure.Identity;
+using MailKit;
 using MailKit.Net.Imap;
-using MailKit.Search;
-using Microsoft.Exchange.WebServices.Data;
+using Microsoft.Graph;
 using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using SearchQuery = MailKit.Search.SearchQuery;
+using Directory = System.IO.Directory;
+using Path = System.IO.Path;
+using File = System.IO.File;
 
 namespace Frends.Community.Email
 {
     /// <summary>
-    /// Read email operations for Exchange servers
+    /// Read email.
     /// </summary>
     public class ReadEmailTask
     {
-        #region Public functions
-
-
-
-
-
-/// <summary>
-/// Read emails from IMAP server
-/// </summary>
-/// <param name="settings">IMAP server settings</param>
-/// <param name="options">Email options</param>
-/// <returns>
-/// List of
-/// {
-/// string Id.
-/// string To.
-/// string Cc.
-/// string From.
-/// DateTime Date.
-/// string Subject.
-/// string BodyText.
-/// string BodyHtml.
-/// }
-/// </returns>
-/// 
-
-public static List<EmailMessageResult> ReadEmailWithIMAP([PropertyTab]ImapSettings settings, [PropertyTab]ImapOptions options)
-{
-    var result = new List<EmailMessageResult>();
-
-    using (var client = new ImapClient())
-    {
-        // accept all certs?
-        if (settings.AcceptAllCerts)
+        /// <summary>
+        /// Read emails from IMAP server
+        /// </summary>
+        /// <param name="settings">IMAP server settings</param>
+        /// <param name="options">Email options</param>
+        /// <returns>List{ string Id, string To, string Cc, string From, DateTime Date, string Subject, string BodyText, string BodyHtml }</returns>
+        public static List<EmailMessageResult> ReadEmailWithIMAP([PropertyTab]ImapSettings settings, [PropertyTab]ImapOptions options)
         {
-            client.ServerCertificateValidationCallback = (s, x509certificate, x590chain, sslPolicyErrors) => true;
-        }
-        else
-        {
-            client.ServerCertificateValidationCallback = MailService.DefaultServerCertificateValidationCallback;
-        }
+            var result = new List<EmailMessageResult>();
 
-        // connect to imap server
-        client.Connect(settings.Host, settings.Port, settings.UseSSL);
-
-        // authenticate with imap server
-        client.Authenticate(settings.UserName, settings.Password);
-
-        var inbox = client.Inbox;
-        inbox.Open(FolderAccess.ReadWrite);
-
-        // get all or only unread emails?
-        IList<UniqueId> messageIds = options.GetOnlyUnreadEmails
-            ? inbox.Search(SearchQuery.NotSeen)
-            : inbox.Search(SearchQuery.All);
-
-        // read as many as there are unread emails or as many as defined in options.MaxEmails
-        for (int i = 0; i < messageIds.Count && i < options.MaxEmails; i++)
-        {
-            MimeMessage msg = inbox.GetMessage(messageIds[i]);
-            result.Add(new EmailMessageResult
+            using (var client = new ImapClient())
             {
-                Id = msg.MessageId,
-                Date = msg.Date.DateTime,
-                Subject = msg.Subject,
-                BodyText = msg.TextBody,
-                BodyHtml = msg.HtmlBody,
-                From = string.Join(",", msg.From.Select(j => j.ToString())),
-                To = string.Join(",", msg.To.Select(j => j.ToString())),
-                Cc = string.Join(",", msg.Cc.Select(j => j.ToString()))
-            });
+                // Accept all certs?
+                if (settings.AcceptAllCerts)
+                    client.ServerCertificateValidationCallback = (s, x509certificate, x590chain, sslPolicyErrors) => true;
+                else
+                    client.ServerCertificateValidationCallback = MailService.DefaultServerCertificateValidationCallback;
 
-            // should mark emails as read?
-            if (!options.DeleteReadEmails && options.MarkEmailsAsRead)
-            {
-                inbox.AddFlags(messageIds[i], MessageFlags.Seen, true);
+                // Connect to imap server.
+                client.Connect(settings.Host, settings.Port, settings.UseSSL);
+
+                // Authenticate with imap server.
+                client.Authenticate(settings.UserName, settings.Password);
+
+                var inbox = client.Inbox;
+                inbox.Open(FolderAccess.ReadWrite);
+
+                // Get all or only unread emails?
+                IList<UniqueId> messageIds = options.GetOnlyUnreadEmails
+                    ? inbox.Search(SearchQuery.NotSeen)
+                    : inbox.Search(SearchQuery.All);
+
+                // Read as many as there are unread emails or as many as defined in options.MaxEmails.
+                for (int i = 0; i < messageIds.Count && i < options.MaxEmails; i++)
+                {
+                    MimeMessage msg = inbox.GetMessage(messageIds[i]);
+                    result.Add(new EmailMessageResult
+                    {
+                        Id = msg.MessageId,
+                        Date = msg.Date.DateTime,
+                        Subject = msg.Subject,
+                        BodyText = msg.TextBody,
+                        BodyHtml = msg.HtmlBody,
+                        From = string.Join(",", msg.From.Select(j => j.ToString())),
+                        To = string.Join(",", msg.To.Select(j => j.ToString())),
+                        Cc = string.Join(",", msg.Cc.Select(j => j.ToString()))
+                    });
+
+                    // Should mark emails as read?
+                    if (!options.DeleteReadEmails && options.MarkEmailsAsRead)
+                        inbox.AddFlags(messageIds[i], MessageFlags.Seen, true);
+                }
+
+                // Should delete emails?
+                if (options.DeleteReadEmails && messageIds.Any())
+                {
+                    inbox.AddFlags(messageIds, MessageFlags.Deleted, false);
+                    inbox.Expunge();
+                }
+
+                client.Disconnect(true);
             }
+
+            return result;
         }
 
-        // should delete emails?
-        if (options.DeleteReadEmails && messageIds.Any())
+        /// <summary>
+        /// Reads emails from an Exchange server.
+        /// </summary>
+        /// <param name="settings">Settings to use</param>
+        /// <param name="options">Options to use</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>List{ string Id, string To, string Cc, string From, DateTime Date, string Subject, string BodyText, string BodyHtml, List(string) AttachmentSaveDirs }</returns>
+        public static async Task<List<EmailMessageResult>> ReadEmailFromExchangeServer([PropertyTab]ExchangeSettings settings, [PropertyTab]ExchangeOptions options, CancellationToken cancellationToken)
         {
-            inbox.AddFlags(messageIds, MessageFlags.Deleted, false);
-            inbox.Expunge();
+            var queryOptions = new List<QueryOption>();
+            var result = new List<EmailMessageResult>();
+            var credentials = new UsernamePasswordCredential(settings.Username, settings.Password, settings.TenantId, settings.AppId);
+            var graphServiceClient = new GraphServiceClient(credentials);
+            var searchQuery = "";
+            var queryInUse = false;
+
+            if (string.IsNullOrEmpty(settings.Username) || string.IsNullOrEmpty(settings.Password) || string.IsNullOrEmpty(settings.AppId) || string.IsNullOrEmpty(settings.TenantId))
+                throw new ArgumentException("Username, Password, Application ID and Tenant ID cannot be empty. Please check Exchange settings.");
+
+            if (string.IsNullOrEmpty(settings.Mailbox))
+                throw new ArgumentException("No mailbox provided. Please provide mailbox where emails will be read.");
+
+            if (!string.IsNullOrWhiteSpace(options.EmailSenderFilter))
+            {
+                searchQuery = $"from:{options.EmailSenderFilter}";
+                queryInUse = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(options.EmailSubjectFilter))
+            {
+                searchQuery += queryInUse ? $" AND subject:{options.EmailSubjectFilter}" : $"subject:{options.EmailSubjectFilter}";
+                queryInUse = true;
+            }
+
+            if (options.GetOnlyEmailsWithAttachments)
+            {
+                searchQuery += queryInUse ? " AND hasAttachments:true" : $"hasAttachments:true";
+                queryInUse = true;
+            }
+
+            if (queryInUse) queryOptions.Add(new QueryOption("$search", $"\"{searchQuery}\""));
+            var messages = await graphServiceClient.Me.MailFolders[settings.Mailbox].Messages.Request(queryOptions).Top(options.MaxEmails).GetAsync(cancellationToken);
+
+            if (messages.Count == 0 && options.ThrowErrorIfNoMessagesFound)
+                throw new Exception("No emails were found.");
+            foreach (var email in messages)
+            {
+                var attachmentPaths = await WriteAttachments(email, options, graphServiceClient, cancellationToken);
+                
+                List<string> ToResult = new List<string>();
+                List<string> CcResult = new List<string>();
+                List<string> BccResult = new List<string>();
+
+                foreach (var to in email.ToRecipients)
+                    ToResult.Add(to.EmailAddress.Address);
+
+                if (email.CcRecipients != null)
+                    foreach (var cc in email.CcRecipients)
+                        CcResult.Add(cc.EmailAddress.Address);
+
+                if (email.BccRecipients != null)
+                    foreach (var bcc in email.BccRecipients)
+                        CcResult.Add(bcc.EmailAddress.Address);
+
+                var singleResult = new EmailMessageResult
+                {
+                    Id = email.Id,
+                    To = string.Join(", ", ToResult),
+                    Cc = CcResult.Count != 0 ? string.Join(", ", CcResult) : "",
+                    Bcc = BccResult.Count != 0 ? string.Join(", ", BccResult) : "",
+                    From = email.From.EmailAddress.Address,
+                    Date = email.ReceivedDateTime.Value.DateTime,
+                    Subject = email.Subject,
+                    BodyText = email.Body.ContentType == BodyType.Text ? email.Body.Content : "",
+                    BodyHtml = email.Body.ContentType == BodyType.Html ? email.Body.Content : "",
+                    AttachmentSaveDirs = attachmentPaths
+                };
+
+                if (options.GetOnlyUnreadEmails && !email.IsRead.Value)
+                {
+                    var added = false;
+                    if (options.GetOnlyEmailsWithAttachments && singleResult.AttachmentSaveDirs.Count != 0)
+                    {
+                        result.Add(singleResult);
+                        added = true;
+                    }
+                    else if (!options.GetOnlyEmailsWithAttachments)
+                    {
+                        result.Add(singleResult);
+                        added = true;
+                    }
+                    if (added && options.DeleteReadEmails)
+                        await graphServiceClient.Me.Messages[email.Id].Request().DeleteAsync(cancellationToken);
+                    else if (added && options.MarkEmailsAsRead)
+                        await graphServiceClient.Me.Messages[email.Id].Request().Select("IsRead").UpdateAsync(new Message { IsRead = true }, cancellationToken);
+                }
+                else if (!options.GetOnlyUnreadEmails)
+                {
+                    var added = false;
+                    if (options.GetOnlyEmailsWithAttachments && singleResult.AttachmentSaveDirs.Count != 0)
+                    {
+                        result.Add(singleResult);
+                        added = true;
+                    }
+                    else if (!options.GetOnlyEmailsWithAttachments)
+                    {
+                        result.Add(singleResult);
+                        added = true;
+                    }
+                    if (added && options.DeleteReadEmails)
+                        await graphServiceClient.Me.Messages[email.Id].Request().DeleteAsync(cancellationToken);
+                    else if (added && options.MarkEmailsAsRead)
+                        await graphServiceClient.Me.Messages[email.Id].Request().Select("IsRead").UpdateAsync(new Message { IsRead = true }, cancellationToken);
+                }
+            }
+
+            return result;
         }
 
-        client.Disconnect(true);
-    }
+        #region HelperMethods
 
-    return result;
-}
-
-/// <summary>
-/// Reads emails from an Exchange server. Can be used only on legacy (Windows) agents.
-/// </summary>
-/// <param name="settings">Settings to use</param>
-/// <param name="options">Options to use</param>
-/// <returns>
-/// List of
-/// {
-/// string Id.
-/// string To.
-/// string Cc.
-/// string From.
-/// DateTime Date.
-/// string Subject.
-/// string BodyText.
-/// string BodyHtml.
-/// List(string) AttachmentSaveDirs
-/// }
-/// </returns>
-public static List<EmailMessageResult> ReadEmailFromExchangeServer([PropertyTab]ExchangeSettings settings, [PropertyTab]ExchangeOptions options)
-{
-#if NET471
-
-
-    if (!options.IgnoreAttachments)
-    {
-        // Check that save directory is given
-        if (options.AttachmentSaveDirectory == "")
-            throw new ArgumentException("No save directory given. ",
-                nameof(options.AttachmentSaveDirectory));
-        // Check that save directory exists
-        if (!Directory.Exists(options.AttachmentSaveDirectory))
-            throw new ArgumentException("Could not find or access attachment save directory. ",
-                nameof(options.AttachmentSaveDirectory));
-    }
-
-    // Connect, create view and search filter
-    ExchangeService exchangeService = Services.ConnectToExchangeService(settings);
-    ItemView view = new ItemView(options.MaxEmails);
-    var searchFilter = BuildFilterCollection(options);
-    FindItemsResults<Item> exchangeResults;
-
-            if (!string.IsNullOrEmpty(settings.Mailbox))
-            {
-                var mb = new Mailbox(settings.Mailbox);
-                var fid = new FolderId(WellKnownFolderName.Inbox, mb);
-                var inbox = Folder.Bind(exchangeService, fid);
-                exchangeResults = searchFilter.Count == 0 ? inbox.FindItems(view) : inbox.FindItems(searchFilter, view);
-            }
-            else
-            {
-                exchangeResults = searchFilter.Count == 0 ? exchangeService.FindItems(WellKnownFolderName.Inbox, view) : exchangeService.FindItems(WellKnownFolderName.Inbox, searchFilter, view);
-            }
-            // Get email items
-            List<EmailMessage> emails = exchangeResults.Where(msg => msg is EmailMessage).Cast<EmailMessage>().ToList();
-
-    // Check if list is empty and if an error needs to be thrown.
-    if (emails.Count == 0 && options.ThrowErrorIfNoMessagesFound)
-    {
-        // If not, return a result with a notification of no found messages.
-        throw new ArgumentException("No messages matching the search filter found. ",
-            nameof(options.ThrowErrorIfNoMessagesFound));
-    }
-
-    // Load properties for each email and process attachments
-    var result = ReadEmails(emails, exchangeService, options);
-
-    // should delete mails?
-    if (options.DeleteReadEmails)
-        emails.ForEach(msg => msg.Delete(DeleteMode.HardDelete));
-
-    // should mark mails as read?
-    if (!options.DeleteReadEmails && options.MarkEmailsAsRead)
-    {
-        foreach (EmailMessage msg in emails)
+        private static async Task<List<string>> WriteAttachments(Message email, ExchangeOptions options, GraphServiceClient graphServiceClient, CancellationToken cancellationToken)
         {
-            msg.IsRead = true;
-            msg.Update(ConflictResolutionMode.AutoResolve);
-        }
-    }
+            var attachmentPaths = new List<string>();
+            if (!options.IgnoreAttachments && email.HasAttachments.Value)
+            {
+                if (string.IsNullOrEmpty(options.AttachmentSaveDirectory))
+                    throw new ArgumentException("No attachment save directory provided.");
+                else if (!Directory.Exists(options.AttachmentSaveDirectory))
+                    Directory.CreateDirectory(options.AttachmentSaveDirectory);
 
-    return result;
+                var attachments = await graphServiceClient.Me.Messages[email.Id].Attachments.Request().GetAsync(cancellationToken);
 
-#else
-    throw new Exception("Only supported on .NET Framework (i.e. on Windows).");
-    #endif
+                foreach (FileAttachment attachment in attachments.Cast<FileAttachment>())
+                {
+                    var path = Path.Combine(options.AttachmentSaveDirectory, attachment.Name);
+                    if (File.Exists(path) && options.OverwriteAttachment)
+                        File.Delete(path);
+                    else if (File.Exists(path))
+                        throw new Exception("Attachment file " + attachment.Name + " already exists in the given directory.");
+                    File.WriteAllBytes(path, attachment.ContentBytes);
+                    attachmentPaths.Add(path);
+                }
+            }
+            return attachmentPaths;
         }
 
         #endregion
-
-        #region Private functions
-
-        /// <summary>
-        /// Build search filter from options.
-        /// </summary>
-        /// <param name="options">Options.</param>
-        /// <returns>Search filter collection.</returns>
-        private static SearchFilter.SearchFilterCollection BuildFilterCollection(ExchangeOptions options)
-{
-    // Create search filter collection.
-    var searchFilter = new SearchFilter.SearchFilterCollection(LogicalOperator.And);
-
-    // Construct rest of search filter based on options
-    if (options.GetOnlyEmailsWithAttachments)
-        searchFilter.Add(new SearchFilter.IsEqualTo(ItemSchema.HasAttachments, true));
-
-    if (options.GetOnlyUnreadEmails)
-        searchFilter.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.IsRead, false));
-
-    if (!string.IsNullOrEmpty(options.EmailSenderFilter))
-        searchFilter.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Sender, options.EmailSenderFilter));
-
-    if (!string.IsNullOrEmpty(options.EmailSubjectFilter))
-        searchFilter.Add(new SearchFilter.ContainsSubstring(EmailMessageSchema.Subject, options.EmailSubjectFilter));
-
-    return searchFilter;
-}
-
-/// <summary>
-/// Convert Email collection t EMailMessageResults.
-/// </summary>
-/// <param name="emails">Emails collection.</param>
-/// <param name="exchangeService">Exchange services.</param>
-/// <param name="options">Options.</param>
-/// <returns>Collection of EmailMessageResult.</returns>
-private static List<EmailMessageResult> ReadEmails(IEnumerable<EmailMessage> emails, ExchangeService exchangeService, ExchangeOptions options)
-{
-
-#if NET471
-
-            List<EmailMessageResult> result = new List<EmailMessageResult>();
-
-    foreach (EmailMessage email in emails)
-    {
-        // Define property set
-        var propSet = new PropertySet(
-                BasePropertySet.FirstClassProperties,
-                EmailMessageSchema.Body,
-                EmailMessageSchema.Attachments);
-
-        // Bind and load email message with desired properties
-        var newEmail = EmailMessage.Bind(exchangeService, email.Id, propSet);
-
-        var pathList = new List<string>();
-        if (!options.IgnoreAttachments)
-        {
-                    // Save all attachments to given directory
-
-                pathList = SaveAttachments(newEmail.Attachments, options);
-        }
-
-        // Build result for email message
-
-        var emailMessage = new EmailMessageResult
-        {
-            Id = newEmail.Id.UniqueId,
-            Date = newEmail.DateTimeReceived,
-            Subject = newEmail.Subject,
-            BodyText = "",
-            BodyHtml = newEmail.Body.Text,
-            To = string.Join(",", newEmail.ToRecipients.Select(j => j.Address)),
-            From = newEmail.From.Address,
-            Cc = string.Join(",", newEmail.CcRecipients.Select(j => j.Address)),
-            AttachmentSaveDirs = pathList
-        };
-
-
-        // Catch exception in case of server version is earlier than Exchange2013
-        try { emailMessage.BodyText = newEmail.TextBody.Text; } catch { }
-
-        result.Add(emailMessage);
     }
-
-    return result;
-
-#else
-    throw new Exception("Only supported on .NET Framework (i.e. on Windows).");
-#endif
-        }
-
-        /// <summary>
-        /// Save attachments from collection to files.
-        /// </summary>
-        /// <param name="attachments">Attachments collection.</param>
-        /// <param name="options">Options.</param>
-        /// <returns>List of full paths to saved file attachments.</returns>
-        private static List<string> SaveAttachments(Microsoft.Exchange.WebServices.Data.AttachmentCollection attachments, ExchangeOptions options)
-{
-    List<string> pathList = new List<string> { };
-
-    foreach (var attachment in attachments)
-    {
-        FileAttachment file = attachment as FileAttachment;
-        string path = Path.Combine(
-            options.AttachmentSaveDirectory,
-            options.OverwriteAttachment ? file.Name :
-                String.Concat(
-                    Path.GetFileNameWithoutExtension(file.Name), "_",
-                    Guid.NewGuid().ToString(),
-                    Path.GetExtension(file.Name))
-                );
-        file.Load(path);
-        pathList.Add(path);
-    }
-
-    return pathList;
-}
-
-#endregion
-}
 }
