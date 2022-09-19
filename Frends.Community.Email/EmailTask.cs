@@ -182,7 +182,7 @@ namespace Frends.Community.Email
 
             var attachmentList = new MessageAttachmentsCollectionPage();
 
-            if (attachments != null)
+            if (attachments != null && attachments.Length > 0)
             {
                 attachmentList = AddAttachments(attachments, cancellationToken);
                 if (attachmentList[0].ContentType == "FailedEmail")
