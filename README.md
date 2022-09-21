@@ -102,8 +102,6 @@ Settings for message properties
 | To               | string | Recipient addresses separated by , or ;.            | jane.doe@somedomain.com |
 | Cc               | string | Cc recipient addresses separated by , or ;.         | jane.doe@somedomain.com |
 | Bcc              | string | Bcc recipient addresses separated by , or ;.        | jane.doe@somedomain.com |
-| From             | string | The email address the message is sent from.         | john.doe@somedomain.com |
-| Sender Name      | string | Name of the sender.                                 | Frends errors           |
 | Subject          | string | Subject of the message.                             | Hello Jane              |
 | Message          | string | Body of the message.                                | You've got mail!        |
 | Is message html  | bool   | Indicates whether the mail message body is in Html. | false                   |
