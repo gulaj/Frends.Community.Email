@@ -102,8 +102,6 @@ Settings for message properties
 | To               | string | Recipient addresses separated by , or ;.            | jane.doe@somedomain.com |
 | Cc               | string | Cc recipient addresses separated by , or ;.         | jane.doe@somedomain.com |
 | Bcc              | string | Bcc recipient addresses separated by , or ;.        | jane.doe@somedomain.com |
-| From             | string | The email address the message is sent from.         | john.doe@somedomain.com |
-| Sender Name      | string | Name of the sender.                                 | Frends errors           |
 | Subject          | string | Subject of the message.                             | Hello Jane              |
 | Message          | string | Body of the message.                                | You've got mail!        |
 | Is message html  | bool   | Indicates whether the mail message body is in Html. | false                   |
@@ -297,3 +295,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 2.5.2   | Fixed bug in SendEmail task. Now email message can contain curly brackets.                                                                                |
 | 2.6.0   | Added new task for sending email to Exchange server. Added possibility to use access token as authentication method for ReadEmailFromExchangeServer-task. |
 | 3.0.0   | ReadEmailFromExchangeServer modified to use Microsoft Graph. Added task for sending emails to Exchange server. Basic authentication removed from ReadEmailFromExchangeServer-task, which breaks the version 2.6.0 implementation. Migration from Basic authentication to OAuth is necessary when updating to 3.0.0. |
+| 3.0.1   | Issue with SendEmailToExchangeServer, where task tried to get attachments even though there were not any.                                                 |

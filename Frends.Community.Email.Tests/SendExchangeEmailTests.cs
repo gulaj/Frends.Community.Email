@@ -240,6 +240,30 @@ namespace Frends.Community.Email.Tests
             await DeleteMessages(subject);
         }
 
+        [Test]
+        public async Task SendEmailWithEmptyAttachmentTest()
+        {
+            var subject = "Email test - EmptyEmail";
+            var message = "This is a test message from Frends.Commmunity.Email Unit Tests.";
+            var input = new ExchangeInput
+            {
+                To = _username,
+                Message = message,
+                IsMessageHtml = false,
+                MessageEncoding = "utf-8",
+                Subject = subject
+            };
+
+            var attachment = new List<Attachment>();
+
+            var result = await EmailTask.SendEmailToExchangeServer(input, attachment.ToArray(), _server, new CancellationToken());
+            Assert.IsTrue(result.EmailSent);
+            Thread.Sleep(2000); // Give the email some time to get through.
+            var email = await ReadTestEmail(subject);
+            Assert.AreEqual(email[0].BodyText, message);
+            await DeleteMessages(subject);
+        }
+
         #region HelperMethods
 
         private async Task DeleteMessages(string subject)
