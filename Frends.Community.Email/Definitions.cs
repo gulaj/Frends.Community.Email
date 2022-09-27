@@ -138,9 +138,16 @@ namespace Frends.Community.Email
         public bool AcceptAllCerts { get; set; }
 
         /// <summary>
+        /// Do you want to skip authentication to SMTP server?
+        /// </summary>
+        [DefaultValue(false)]
+        public bool SkipAuthentication { get; set; }
+
+        /// <summary>
         /// Use this username to log in to the SMTP server.
         /// </summary>
         [DefaultValue("\"\"")]
+        [UIHint(nameof(SkipAuthentication), "", false)]
         public string UserName { get; set; }
 
         /// <summary>
@@ -148,6 +155,7 @@ namespace Frends.Community.Email
         /// </summary>
         [PasswordPropertyText]
         [DefaultValue("\"\"")]
+        [UIHint(nameof(SkipAuthentication), "", false)]
         public string Password { get; set; }
     }
 
