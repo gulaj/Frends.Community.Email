@@ -112,9 +112,12 @@ namespace Frends.Community.Email
 
                 client.Connect(SMTPSettings.SMTPServer, SMTPSettings.Port, secureSocketOption);
 
-                client.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                client.Authenticate(new NetworkCredential(SMTPSettings.UserName, SMTPSettings.Password));
+                if (!SMTPSettings.SkipAuthentication)
+                {
+                    client.AuthenticationMechanisms.Remove("XOAUTH2");
+                    client.Authenticate(new NetworkCredential(SMTPSettings.UserName, SMTPSettings.Password));
+                }
 
                 client.Send(mail);
 

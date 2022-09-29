@@ -61,7 +61,8 @@ namespace Frends.Community.Email.Tests
                 SMTPServer = SMTPADDRESS,
                 Port = PORT,
                 SecureSocket = SecureSocketOption.Auto,
-                AcceptAllCerts = ACCEPTALLCERTS
+                AcceptAllCerts = ACCEPTALLCERTS,
+                SkipAuthentication = true
             };
 
         }
@@ -156,6 +157,21 @@ namespace Frends.Community.Email.Tests
 
             Assert.Throws<FileNotFoundException>(() => EmailTask.SendEmail(input, Attachments, _options, new CancellationToken()));
             
+        }
+
+        [Test]
+        public void SendEmailWithAuthentication()
+        {
+            var input = _input;
+            input.Subject = "Email test - Authentication";
+
+            var options = _options;
+            options.SkipAuthentication = false;
+            options.UserName = "Something";
+            options.Password = "Something";
+
+            var result = EmailTask.SendEmail(input, null, _options, new CancellationToken());
+            Assert.IsTrue(result.EmailSent);
         }
     }
 }
