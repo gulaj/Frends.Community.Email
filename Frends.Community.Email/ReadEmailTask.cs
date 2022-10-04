@@ -106,9 +106,6 @@ namespace Frends.Community.Email
             if (string.IsNullOrEmpty(settings.Username) || string.IsNullOrEmpty(settings.Password) || string.IsNullOrEmpty(settings.AppId) || string.IsNullOrEmpty(settings.TenantId))
                 throw new ArgumentException("Username, Password, Application ID and Tenant ID cannot be empty. Please check Exchange settings.");
 
-            if (string.IsNullOrEmpty(settings.Mailbox))
-                throw new ArgumentException("No mailbox provided. Please provide mailbox where emails will be read.");
-
             if (!string.IsNullOrWhiteSpace(options.EmailSenderFilter))
             {
                 searchQuery = $"from:{options.EmailSenderFilter}";
@@ -128,7 +125,21 @@ namespace Frends.Community.Email
             }
 
             if (queryInUse) queryOptions.Add(new QueryOption("$search", $"\"{searchQuery}\""));
-            var messages = await graphServiceClient.Me.MailFolders[settings.Mailbox].Messages.Request(queryOptions).Top(options.MaxEmails).GetAsync(cancellationToken);
+
+            var mailbox = !string.IsNullOrWhiteSpace(settings.Mailbox) ? settings.Mailbox : settings.Username;
+            var folder = !string.IsNullOrWhiteSpace(settings.MailFolder) ? settings.MailFolder : "Inbox";
+            var folderID = "";
+
+            var allFolders = await graphServiceClient.Users[mailbox].MailFolders.Request().GetAsync(cancellationToken);
+
+            foreach(var oneFolder in allFolders)
+                if (oneFolder.DisplayName == folder)
+                    folderID = oneFolder.Id;
+
+            if (folderID == "")
+                throw new ArgumentException($"No folders found with name {folder}. Please check the folder name. Please note that the name is case sensitive.");
+
+            var messages = await graphServiceClient.Users[mailbox].MailFolders[folderID].Messages.Request(queryOptions).Top(options.MaxEmails).GetAsync(cancellationToken);
 
             if (messages.Count == 0 && options.ThrowErrorIfNoMessagesFound)
                 throw new Exception("No emails were found.");

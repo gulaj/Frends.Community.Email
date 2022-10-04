@@ -34,6 +34,9 @@ From API permissions, you need to add delegate permissions for Mail.ReadWrite an
 Without admin consent Graph will require interactive authentication for the user, which is not possible with Frends.<br/>
 ![](img/api_permissions.png)
 
+Note that if you want to read emails from other users mailbox instead of the users which you use to authenticate (on behalf of other user), you need to use Shared API permissions.<br/>
+![](img/api_shared.png)
+
 # Tasks
 
 ## SendEmail
@@ -194,13 +197,14 @@ Read emails from exchange server with or without attachements.
 ### ExchangeSettings
 Settings for logging in to Exchange using Microsot Graph.
 
-| Property | Type   | Description                                   | Example                            |
-|----------|--------|-----------------------------------------------|------------------------------------|
-| Username | string | Username of the user who will send the email. | someuser@foobar.com                |
-| Password | string | Password of the user who will send the email. | verysecretpassword123              |
-| AppId    | string | Application ID of Azure App registration.     | XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX |
-| TenantId | string | Tenant ID of Azure App registration.          | XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX |
-| Mailbox  | string | Mailbox from where the emails are read.       | inbox                              |
+| Property   | Type   | Description                                                                      | Example                            |
+|------------|--------|----------------------------------------------------------------------------------|------------------------------------|
+| Username   | string | Username of the user who will send the email.                                    | someuser@foobar.com                |
+| Password   | string | Password of the user who will send the email.                                    | verysecretpassword123              |
+| AppId      | string | Application ID of Azure App registration.                                        | XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX |
+| TenantId   | string | Tenant ID of Azure App registration.                                             | XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX |
+| Mailbox    | string | Mailbox from where emails are read. Defaults to users own mailbox.               | someuser@foobar.com                |
+| MailFolder | string | Mailfoder from where emails are read. Defaults to Inbox. Name is case sensitive. | Inbox                              |
 
 ### Options
 
@@ -298,3 +302,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 3.0.0   | ReadEmailFromExchangeServer modified to use Microsoft Graph. Added task for sending emails to Exchange server. Basic authentication removed from ReadEmailFromExchangeServer-task, which breaks the version 2.6.0 implementation. Migration from Basic authentication to OAuth is necessary when updating to 3.0.0. |
 | 3.0.1   | Issue with SendEmailToExchangeServer, where task tried to get attachments even though there were not any.                                                 |
 | 3.1.0   | Option added to SendEmail-task to skip authentication to SMTP server.                                                                                     |
+| 3.1.1   | ReadEmailFromExchangeServer: Added support to read other users mailboxes.                                                                                 |
