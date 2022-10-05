@@ -81,10 +81,19 @@ namespace Frends.Community.Email
 
         /// <summary>
         /// Mailbox from where the emails will be read.
+        /// If empty, username will be used.
         /// </summary>
-        [DefaultValue("inbox")]
+        [DefaultValue("")]
         [DisplayFormat(DataFormatString = "Text")]
         public string Mailbox { get; set; }
+
+        /// <summary>
+        /// Folder from where the emails will be read.
+        /// If empty then value will be set to Inbox.
+        /// </summary>
+        [DefaultValue("Inbox")]
+        [DisplayFormat(DataFormatString = "Text")]
+        public string MailFolder { get; set; }
     }
 
     /// <summary>
