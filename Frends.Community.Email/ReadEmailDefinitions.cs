@@ -190,11 +190,11 @@ namespace Frends.Community.Email
         public string AttachmentSaveDirectory { get; set; }
 
         /// <summary>
-        /// Should the attachment be overwritten, if the save directory already contains an attachment with the same name?
-        /// If no, a GUID will be added to the filename.
+        /// What should be done if the attachment file already exists in destination folder?
         /// </summary>
         [UIHint(nameof(IgnoreAttachments), "", false)]
-        public bool OverwriteAttachment { get; set; }
+        [DefaultValue(FileExists.Error)]
+        public FileExists FileExistsAction { get; set; }
     }
 
     /// <summary>
@@ -251,5 +251,24 @@ namespace Frends.Community.Email
         /// Attachment download path.
         /// </summary>
         public List<string> AttachmentSaveDirs { get; set; }
+    }
+
+    /// <summary>
+    /// Enum-class for actions if attachment exists in destination folder.
+    /// </summary>
+    public enum FileExists
+    {
+        /// <summary>
+        /// Overwrite existing attachment.
+        /// </summary>
+        Overwrite,
+        /// <summary>
+        /// Rename new attachment before save.
+        /// </summary>
+        Rename,
+        /// <summary>
+        /// Throw error.
+        /// </summary>
+        Error
     }
 }

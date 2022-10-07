@@ -145,7 +145,6 @@ namespace Frends.Community.Email
                 throw new Exception("No emails were found.");
             foreach (var email in messages)
             {
-                var attachmentPaths = await WriteAttachments(email, options, graphServiceClient, cancellationToken);
                 
                 List<string> ToResult = new List<string>();
                 List<string> CcResult = new List<string>();
@@ -173,19 +172,22 @@ namespace Frends.Community.Email
                     Subject = email.Subject,
                     BodyText = email.Body.ContentType == BodyType.Text ? email.Body.Content : "",
                     BodyHtml = email.Body.ContentType == BodyType.Html ? email.Body.Content : "",
-                    AttachmentSaveDirs = attachmentPaths
+                    AttachmentSaveDirs = null
                 };
 
                 if (options.GetOnlyUnreadEmails && !email.IsRead.Value)
                 {
                     var added = false;
-                    if (options.GetOnlyEmailsWithAttachments && singleResult.AttachmentSaveDirs.Count != 0)
+                    if (options.GetOnlyEmailsWithAttachments && email.HasAttachments.Value)
                     {
+                        singleResult.AttachmentSaveDirs = await WriteAttachments(email, options, graphServiceClient, cancellationToken);
                         result.Add(singleResult);
                         added = true;
                     }
                     else if (!options.GetOnlyEmailsWithAttachments)
                     {
+                        if (email.HasAttachments.Value)
+                            singleResult.AttachmentSaveDirs = await WriteAttachments(email, options, graphServiceClient, cancellationToken);
                         result.Add(singleResult);
                         added = true;
                     }
@@ -197,13 +199,16 @@ namespace Frends.Community.Email
                 else if (!options.GetOnlyUnreadEmails)
                 {
                     var added = false;
-                    if (options.GetOnlyEmailsWithAttachments && singleResult.AttachmentSaveDirs.Count != 0)
+                    if (options.GetOnlyEmailsWithAttachments && email.HasAttachments.Value)
                     {
+                        singleResult.AttachmentSaveDirs = await WriteAttachments(email, options, graphServiceClient, cancellationToken);
                         result.Add(singleResult);
                         added = true;
                     }
                     else if (!options.GetOnlyEmailsWithAttachments)
                     {
+                        if (email.HasAttachments.Value)
+                            singleResult.AttachmentSaveDirs = await WriteAttachments(email, options, graphServiceClient, cancellationToken);
                         result.Add(singleResult);
                         added = true;
                     }
@@ -234,15 +239,32 @@ namespace Frends.Community.Email
                 foreach (FileAttachment attachment in attachments.Cast<FileAttachment>())
                 {
                     var path = Path.Combine(options.AttachmentSaveDirectory, attachment.Name);
-                    if (File.Exists(path) && options.OverwriteAttachment)
+                    if (File.Exists(path) && options.FileExistsAction == FileExists.Overwrite)
                         File.Delete(path);
-                    else if (File.Exists(path))
+                    else if (File.Exists(path) && options.FileExistsAction == FileExists.Rename)
+                        path = RenameAttachment(path, options.AttachmentSaveDirectory);
+                    else if (File.Exists(path) && options.FileExistsAction == FileExists.Error)
                         throw new Exception("Attachment file " + attachment.Name + " already exists in the given directory.");
                     File.WriteAllBytes(path, attachment.ContentBytes);
                     attachmentPaths.Add(path);
                 }
             }
             return attachmentPaths;
+        }
+
+        private static string RenameAttachment(string path, string directory)
+        {
+            var index = 1;
+            var extention = Path.GetExtension(path);
+            var oldFileName = Path.GetFileNameWithoutExtension(path);
+            while (File.Exists(path))
+            {
+                var increment = $"({index})";
+                var newFileName = oldFileName + increment + extention;
+                path = Path.Combine(directory, newFileName);
+                index++;
+            }
+            return path;
         }
 
         #endregion
