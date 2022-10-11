@@ -208,19 +208,19 @@ Settings for logging in to Exchange using Microsot Graph.
 
 ### Options
 
-| Property                     | Type   | Description                                                                                          | Example           |
-|------------------------------|--------|------------------------------------------------------------------------------------------------------|-------------------|
-| MaxEmails                    | int    | Maximum number of emails to retrieve.                                                                | 10                |
-| GetOnlyUnreadEmails          | bool   | If true, only attachments of unread emails will be fetched.                                          | false             |
-| MarkEmailsAsRead             | bool   | If true, will mark processed emails as read (unless execution is cancelled during processing).       | false             |
-| DeleteReadEmails             | bool   | If true, will delete processed emails from server (unless execution is cancelled during processing). | false             |
-| EmailSenderFilter            | string | Optional. If a sender is given, it will be used to filter emails.                                    | sender@frends.com |
-| EmailSubjectFilter           | string | Optional. If a subject is given, it will be used to filter emails (match as substring).              | Payments          |
-| ThrowErrorIfNoMessagesFound  | bool   | If true, error will be thrown if no attachments are found.                                           | false             |
-| IgnoreAttachments			   | bool   | If true, attachement handling will be skipped.                                                       | true              |
-| GetOnlyEmailsWithAttachments | bool   | If true, gets only emails with attachements.                                                         | true              |
-| AttachmentSaveDirectory      | string | Directory where attachments will be saved to.                                                        | C:\WorkDir\       |
-| OverwriteAttachment          | bool   | If true, files in the save directory with the sama name as the attachment will be overwritten.       | false             |
+| Property                     | Type   | Description                                                                                                       | Example           |
+|------------------------------|--------|-------------------------------------------------------------------------------------------------------------------|-------------------|
+| MaxEmails                    | int    | Maximum number of emails to retrieve.                                                                             | 10                |
+| GetOnlyUnreadEmails          | bool   | If true, only attachments of unread emails will be fetched.                                                       | false             |
+| MarkEmailsAsRead             | bool   | If true, will mark processed emails as read (unless execution is cancelled during processing).                    | false             |
+| DeleteReadEmails             | bool   | If true, will delete processed emails from server (unless execution is cancelled during processing).              | false             |
+| EmailSenderFilter            | string | Optional. If a sender is given, it will be used to filter emails.                                                 | sender@frends.com |
+| EmailSubjectFilter           | string | Optional. If a subject is given, it will be used to filter emails (match as substring).                           | Payments          |
+| ThrowErrorIfNoMessagesFound  | bool   | If true, error will be thrown if no attachments are found.                                                        | false             |
+| IgnoreAttachments			   | bool   | If true, attachement handling will be skipped.                                                                    | true              |
+| GetOnlyEmailsWithAttachments | bool   | If true, gets only emails with attachements.                                                                      | true              |
+| AttachmentSaveDirectory      | string | Directory where attachments will be saved to.                                                                     | C:\WorkDir\       |
+| FileExistsAction             | enum   | What should be done if the attachment file exists in the destination directory. Options: Overwrite, Rename, Error | Error             |
 
 ### Result
 ReadEmailFromExchangeServer task returns a list of EmailMessageResult objects. Each object contains following properties:
@@ -303,3 +303,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 3.0.1   | Issue with SendEmailToExchangeServer, where task tried to get attachments even though there were not any.                                                 |
 | 3.1.0   | Option added to SendEmail-task to skip authentication to SMTP server.                                                                                     |
 | 3.1.1   | ReadEmailFromExchangeServer: Added support to read other users mailboxes.                                                                                 |
+| 3.2.0   | ReadEmailFromExchangeServer: Fixed issue where attachments are saved even if the email is not read. Added option to select what should be done if the attachment file exists in destination directory. |

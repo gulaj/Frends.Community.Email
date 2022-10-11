@@ -287,8 +287,7 @@ namespace Frends.Community.Email.Tests
                 TenantId = _tenantID,
                 AppId = _applicationID,
                 Username = _username,
-                Password = _password,
-                Mailbox = "inbox"
+                Password = _password
             };
 
             var options = new ExchangeOptions
@@ -313,8 +312,7 @@ namespace Frends.Community.Email.Tests
                 TenantId = _tenantID,
                 AppId = _applicationID,
                 Username = _username,
-                Password = _password,
-                Mailbox = "inbox"
+                Password = _password
             };
 
             var options = new ExchangeOptions

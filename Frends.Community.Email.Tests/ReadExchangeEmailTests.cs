@@ -249,7 +249,7 @@ namespace Frends.Community.Email.Tests
         public async Task ReadEmailFromExchangeServer_ShouldOverwriteAttachmentsTest()
         {
             var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../OverwriteData/");
-            var subject = "Overwrite Attchment Test";
+            var subject = "Overwrite Attachment Test";
             await SendTestEmailWithAttachment(subject, "OverwriteAttachment.txt");
 
             var options = new ExchangeOptions
@@ -261,7 +261,7 @@ namespace Frends.Community.Email.Tests
                 IgnoreAttachments = false,
                 GetOnlyEmailsWithAttachments = true,
                 AttachmentSaveDirectory = dirPath,
-                OverwriteAttachment = true
+                FileExistsAction = FileExists.Overwrite
             };
 
             Directory.CreateDirectory(dirPath);
@@ -301,7 +301,7 @@ namespace Frends.Community.Email.Tests
             };
 
             var result = await ReadEmailTask.ReadEmailFromExchangeServer(settings, options, new CancellationToken());
-            Assert.AreEqual(result.Count, 1);
+            Assert.AreEqual(1, result.Count);
             await DeleteMessages(subject, "frends_exchange_test_user_2@frends.com");
         }
 
@@ -357,6 +357,94 @@ namespace Frends.Community.Email.Tests
             };
 
             Assert.ThrowsAsync<ArgumentException>(async () => await ReadEmailTask.ReadEmailFromExchangeServer(settings, options, new CancellationToken()));
+        }
+
+        [Test]
+        public async Task ReadEmailFromExchangeServer_GetAttachmentOnlyFromUnreadEmail()
+        {
+            var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../OnlyRead/");
+            var subject = "Only Read Attachment Test";
+            await SendTestEmailWithAttachment(subject, "OnlyReadAttachment.txt");
+
+            var options = new ExchangeOptions
+            {
+                MaxEmails = 1,
+                DeleteReadEmails = false,
+                GetOnlyUnreadEmails = true,
+                MarkEmailsAsRead = true,
+                IgnoreAttachments = false,
+                GetOnlyEmailsWithAttachments = true,
+                AttachmentSaveDirectory = dirPath,
+                FileExistsAction = FileExists.Overwrite
+            };
+
+            Directory.CreateDirectory(dirPath);
+            var result = await ReadEmailTask.ReadEmailFromExchangeServer(_settings, options, new CancellationToken());
+            Assert.IsTrue(File.Exists(result[0].AttachmentSaveDirs[0]));
+            Assert.AreEqual(Directory.GetFiles(dirPath).Length, 1);
+            File.Delete(result[0].AttachmentSaveDirs[0]);
+            result = await ReadEmailTask.ReadEmailFromExchangeServer(_settings, options, new CancellationToken());
+            Assert.AreEqual(0, result.Count);
+            Assert.AreEqual(0, Directory.GetFiles(dirPath).Length);
+            Directory.Delete(dirPath, true);
+            await DeleteMessages(subject, _username);
+        }
+
+        [Test]
+        public async Task ReadEmailFromExchangeServer_RenameAttachments()
+        {
+            var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../Rename/");
+            var subject = "Rename Attachments Test";
+            await SendTestEmailWithAttachment(subject, "RenameAttachment.txt");
+
+            var options = new ExchangeOptions
+            {
+                MaxEmails = 1,
+                DeleteReadEmails = false,
+                GetOnlyUnreadEmails = false,
+                MarkEmailsAsRead = true,
+                IgnoreAttachments = false,
+                GetOnlyEmailsWithAttachments = true,
+                AttachmentSaveDirectory = dirPath,
+                FileExistsAction = FileExists.Rename
+            };
+
+            Directory.CreateDirectory(dirPath);
+            await ReadEmailTask.ReadEmailFromExchangeServer(_settings, options, new CancellationToken());
+            await ReadEmailTask.ReadEmailFromExchangeServer(_settings, options, new CancellationToken());
+            await ReadEmailTask.ReadEmailFromExchangeServer(_settings, options, new CancellationToken());
+            Assert.IsTrue(File.Exists(Path.Combine(dirPath, "RenameAttachment.txt")));
+            Assert.IsTrue(File.Exists(Path.Combine(dirPath, "RenameAttachment(1).txt")));
+            Assert.IsTrue(File.Exists(Path.Combine(dirPath, "RenameAttachment(2).txt")));
+            Directory.Delete(dirPath, true);
+            await DeleteMessages(subject, _username);
+        }
+
+        [Test]
+        public async Task ReadEmailFromExchangeServer_ErrorIfAttachmentExists()
+        {
+            var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../Error/");
+            var subject = "Error Attachment Test";
+            await SendTestEmailWithAttachment(subject, "Error.txt");
+
+            var options = new ExchangeOptions
+            {
+                MaxEmails = 1,
+                DeleteReadEmails = false,
+                GetOnlyUnreadEmails = false,
+                MarkEmailsAsRead = true,
+                IgnoreAttachments = false,
+                GetOnlyEmailsWithAttachments = true,
+                AttachmentSaveDirectory = dirPath,
+                FileExistsAction = FileExists.Error
+            };
+
+            Directory.CreateDirectory(dirPath);
+            await ReadEmailTask.ReadEmailFromExchangeServer(_settings, options, new CancellationToken());
+            var result = Assert.ThrowsAsync<Exception>(async () => await ReadEmailTask.ReadEmailFromExchangeServer(_settings, options, new CancellationToken()));
+            Assert.AreEqual("Attachment file Error.txt already exists in the given directory.", result.Message);
+            Directory.Delete(dirPath, true);
+            await DeleteMessages(subject, _username);
         }
 
         #region HelperMethods

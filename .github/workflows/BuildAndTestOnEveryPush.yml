@@ -33,12 +33,19 @@ jobs:
     - name: Build
       run: dotnet build
     
-    - name: Test
+    - name: Run ReadExchangeEmailTests
       env:
         Exchange_User_Password: ${{ secrets.EXCHANGE_USER_PASSWORD }}
         Exchange_Application_ID: ${{ secrets.EXCHANGE_APPLICATION_ID }}
         Exchange_Tenant_ID: ${{ secrets.EXCHANGE_TENANT_ID }}
-      run: dotnet test --filter Frends.Community.Email.Tests.ExchangeEmailTests
+      run: dotnet test --filter Frends.Community.Email.Tests.ReadExchangeEmailTests
+
+    - name: Run SendExchangeEmailTests
+      env:
+        Exchange_User_Password: ${{ secrets.EXCHANGE_USER_PASSWORD }}
+        Exchange_Application_ID: ${{ secrets.EXCHANGE_APPLICATION_ID }}
+        Exchange_Tenant_ID: ${{ secrets.EXCHANGE_TENANT_ID }}
+      run: dotnet test --filter Frends.Community.Email.Tests.SendExchangeEmailTests
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
