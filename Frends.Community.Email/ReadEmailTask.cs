@@ -180,42 +180,42 @@ namespace Frends.Community.Email
                     var added = false;
                     if (options.GetOnlyEmailsWithAttachments && email.HasAttachments.Value)
                     {
-                        singleResult.AttachmentSaveDirs = await WriteAttachments(email, options, graphServiceClient, cancellationToken);
+                        singleResult.AttachmentSaveDirs = await WriteAttachments(email, options, graphServiceClient, mailbox, cancellationToken);
                         result.Add(singleResult);
                         added = true;
                     }
                     else if (!options.GetOnlyEmailsWithAttachments)
                     {
                         if (email.HasAttachments.Value)
-                            singleResult.AttachmentSaveDirs = await WriteAttachments(email, options, graphServiceClient, cancellationToken);
+                            singleResult.AttachmentSaveDirs = await WriteAttachments(email, options, graphServiceClient, mailbox, cancellationToken);
                         result.Add(singleResult);
                         added = true;
                     }
                     if (added && options.DeleteReadEmails)
-                        await graphServiceClient.Me.Messages[email.Id].Request().DeleteAsync(cancellationToken);
+                        await graphServiceClient.Users[mailbox].Messages[email.Id].Request().DeleteAsync(cancellationToken);
                     else if (added && options.MarkEmailsAsRead)
-                        await graphServiceClient.Me.Messages[email.Id].Request().Select("IsRead").UpdateAsync(new Message { IsRead = true }, cancellationToken);
+                        await graphServiceClient.Users[mailbox].Messages[email.Id].Request().Select("IsRead").UpdateAsync(new Message { IsRead = true }, cancellationToken);
                 }
                 else if (!options.GetOnlyUnreadEmails)
                 {
                     var added = false;
                     if (options.GetOnlyEmailsWithAttachments && email.HasAttachments.Value)
                     {
-                        singleResult.AttachmentSaveDirs = await WriteAttachments(email, options, graphServiceClient, cancellationToken);
+                        singleResult.AttachmentSaveDirs = await WriteAttachments(email, options, graphServiceClient, mailbox, cancellationToken);
                         result.Add(singleResult);
                         added = true;
                     }
                     else if (!options.GetOnlyEmailsWithAttachments)
                     {
                         if (email.HasAttachments.Value)
-                            singleResult.AttachmentSaveDirs = await WriteAttachments(email, options, graphServiceClient, cancellationToken);
+                            singleResult.AttachmentSaveDirs = await WriteAttachments(email, options, graphServiceClient, mailbox, cancellationToken);
                         result.Add(singleResult);
                         added = true;
                     }
                     if (added && options.DeleteReadEmails)
-                        await graphServiceClient.Me.Messages[email.Id].Request().DeleteAsync(cancellationToken);
+                        await graphServiceClient.Users[mailbox].Messages[email.Id].Request().DeleteAsync(cancellationToken);
                     else if (added && options.MarkEmailsAsRead)
-                        await graphServiceClient.Me.Messages[email.Id].Request().Select("IsRead").UpdateAsync(new Message { IsRead = true }, cancellationToken);
+                        await graphServiceClient.Users[mailbox].Messages[email.Id].Request().Select("IsRead").UpdateAsync(new Message { IsRead = true }, cancellationToken);
                 }
             }
 
@@ -224,7 +224,7 @@ namespace Frends.Community.Email
 
         #region HelperMethods
 
-        private static async Task<List<string>> WriteAttachments(Message email, ExchangeOptions options, GraphServiceClient graphServiceClient, CancellationToken cancellationToken)
+        private static async Task<List<string>> WriteAttachments(Message email, ExchangeOptions options, GraphServiceClient graphServiceClient, string user, CancellationToken cancellationToken)
         {
             var attachmentPaths = new List<string>();
             if (!options.IgnoreAttachments && email.HasAttachments.Value)
@@ -234,7 +234,7 @@ namespace Frends.Community.Email
                 else if (!Directory.Exists(options.AttachmentSaveDirectory))
                     Directory.CreateDirectory(options.AttachmentSaveDirectory);
 
-                var attachments = await graphServiceClient.Me.Messages[email.Id].Attachments.Request().GetAsync(cancellationToken);
+                var attachments = await graphServiceClient.Users[user].Messages[email.Id].Attachments.Request().GetAsync(cancellationToken);
 
                 foreach (FileAttachment attachment in attachments.Cast<FileAttachment>())
                 {

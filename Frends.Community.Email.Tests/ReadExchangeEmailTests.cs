@@ -50,7 +50,7 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_ShouldReadOneItemTest()
+        public async Task ShouldReadOneItemTest()
         {
             var subject = "One Email Test";
             await SendTestEmail(subject, _username);
@@ -70,7 +70,7 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_ShouldReadFiveItemsTest()
+        public async Task ShouldReadFiveItemsTest()
         {
             var subject = "Five Emails test";
             for (int i = 0; i < 5; i++)
@@ -92,7 +92,7 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_ShouldGetUnreadMailsTest()
+        public async Task ShouldGetUnreadMailsTest()
         {
             var subject = "Get Unread Emails Test";
             await SendTestEmail(subject, _username);
@@ -115,7 +115,7 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_ShouldMarkEmailAsReadTest()
+        public async Task ShouldMarkEmailAsReadTest()
         {
             var subject = "Mark Email As Read Test";
             await SendTestEmail(subject, _username);
@@ -138,13 +138,13 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_ShouldGetAttachmentTest()
+        public async Task ShouldGetAttachmentTest()
         {
             var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../AttachmentData/");
             var filename = "GetAttachmentTest.txt";
             var fullpath = Path.Combine(dirPath, filename);
             var subject = "Get Attachment Test";
-            await SendTestEmailWithAttachment(subject, filename);
+            await SendTestEmailWithAttachment(subject, filename, _username);
 
             var options = new ExchangeOptions
             {
@@ -166,7 +166,7 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_ShouldFilterBySenderTest()
+        public async Task ShouldFilterBySenderTest()
         {
             var subject = "Filter By Sender Test";
             await SendTestEmail(subject, _username);
@@ -190,7 +190,7 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_ShouldFilterBySubjectTest()
+        public async Task ShouldFilterBySubjectTest()
         {
             var subject = "Filter By Subject Test";
             await SendTestEmail(subject, _username);
@@ -214,12 +214,12 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_ShouldGetOnlyEmailsWithAttachmentsTest()
+        public async Task ShouldGetOnlyEmailsWithAttachmentsTest()
         {
             var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../OnlyAttachmentData/");
             var subject = "Get Only Emails With Attachments Test";
             var fullpath = Path.Combine(dirPath, "OnlyAttachment.txt");
-            await SendTestEmailWithAttachment(subject, "OnlyAttachment.txt");
+            await SendTestEmailWithAttachment(subject, "OnlyAttachment.txt", _username);
             await SendTestEmail(subject, _username);
 
             // There has been some hicups where the attachment already exists.
@@ -246,11 +246,11 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_ShouldOverwriteAttachmentsTest()
+        public async Task ShouldOverwriteAttachmentsTest()
         {
             var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../OverwriteData/");
             var subject = "Overwrite Attachment Test";
-            await SendTestEmailWithAttachment(subject, "OverwriteAttachment.txt");
+            await SendTestEmailWithAttachment(subject, "OverwriteAttachment.txt", _username);
 
             var options = new ExchangeOptions
             {
@@ -276,7 +276,7 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_ReadOtherUsersInbox()
+        public async Task ReadOtherUsersInbox()
         {
             var subject = "Read From Other User";
             await SendTestEmail(subject, "frends_exchange_test_user_2@frends.com");
@@ -306,7 +306,41 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_ReadFromOtherFolder()
+        public async Task ReadAttachmentFromOtherUsersInbox()
+        {
+            var subject = "Read Attachment From Other User";
+            var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../OtherUserAttachment/");
+            await SendTestEmailWithAttachment(subject, "OtherUserAttachment.txt", "frends_exchange_test_user_2@frends.com");
+            var options = new ExchangeOptions
+            {
+                MaxEmails = 1,
+                DeleteReadEmails = true,
+                GetOnlyUnreadEmails = false,
+                MarkEmailsAsRead = false,
+                IgnoreAttachments = false,
+                EmailSubjectFilter = subject,
+                AttachmentSaveDirectory = dirPath,
+                FileExistsAction = FileExists.Overwrite
+            };
+
+            var settings = new ExchangeSettings
+            {
+                TenantId = _tenantID,
+                AppId = _applicationID,
+                Username = _username,
+                Password = _password,
+                MailFolder = _mailfolder,
+                Mailbox = "frends_exchange_test_user_2@frends.com"
+            };
+
+            var result = await ReadEmailTask.ReadEmailFromExchangeServer(settings, options, new CancellationToken());
+            Assert.IsTrue(File.Exists(result[0].AttachmentSaveDirs[0]));
+            Directory.Delete(dirPath, true);
+            await DeleteMessages(subject, "frends_exchange_test_user_2@frends.com");
+        }
+
+        [Test]
+        public async Task ReadFromOtherFolder()
         {
             var subject = "Read from other folder";
             await SendTestEmail(subject, _username);
@@ -336,7 +370,7 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public void ReadEmailFromExchangeServer_WrongMailFolderThrowsError()
+        public void WrongMailFolderThrowsError()
         {
             var options = new ExchangeOptions
             {
@@ -360,11 +394,11 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_GetAttachmentOnlyFromUnreadEmail()
+        public async Task GetAttachmentOnlyFromUnreadEmail()
         {
             var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../OnlyRead/");
             var subject = "Only Read Attachment Test";
-            await SendTestEmailWithAttachment(subject, "OnlyReadAttachment.txt");
+            await SendTestEmailWithAttachment(subject, "OnlyReadAttachment.txt", _username);
 
             var options = new ExchangeOptions
             {
@@ -391,11 +425,11 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_RenameAttachments()
+        public async Task RenameAttachments()
         {
             var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../Rename/");
             var subject = "Rename Attachments Test";
-            await SendTestEmailWithAttachment(subject, "RenameAttachment.txt");
+            await SendTestEmailWithAttachment(subject, "RenameAttachment.txt", _username);
 
             var options = new ExchangeOptions
             {
@@ -421,11 +455,11 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadEmailFromExchangeServer_ErrorIfAttachmentExists()
+        public async Task ErrorIfAttachmentExists()
         {
             var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../Error/");
             var subject = "Error Attachment Test";
-            await SendTestEmailWithAttachment(subject, "Error.txt");
+            await SendTestEmailWithAttachment(subject, "Error.txt", _username);
 
             var options = new ExchangeOptions
             {
@@ -478,13 +512,13 @@ namespace Frends.Community.Email.Tests
             Thread.Sleep(2000); // Give the email some time to get through.
         }
 
-        private async Task SendTestEmailWithAttachment(string subject, string filename)
+        private async Task SendTestEmailWithAttachment(string subject, string filename, string receiver)
         {
             var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../..", filename);
             File.WriteAllText(filePath, "This is a test attachment file.");
             var input = new ExchangeInput
             {
-                To = _username,
+                To = receiver,
                 Message = "This email has a file attachment.",
                 IsMessageHtml = false,
                 MessageEncoding = "utf-8",
