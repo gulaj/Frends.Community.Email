@@ -3,6 +3,7 @@ using Microsoft.Graph;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using File = System.IO.File;
@@ -174,6 +175,47 @@ namespace Frends.Community.Email.Tests
             var subject = "Email test - FileAttachment";
             var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../attachmentFile.txt");
             File.WriteAllText(filePath, "This is a test attachment file.");
+            var input = new ExchangeInput
+            {
+                To = _username,
+                Message = "This email has a file attachment.",
+                IsMessageHtml = false,
+                MessageEncoding = "utf-8",
+                Subject = subject
+            };
+
+            var attachment = new Attachment
+            {
+                AttachmentType = AttachmentType.FileAttachment,
+                FilePath = filePath,
+                ThrowExceptionIfAttachmentNotFound = false,
+                SendIfNoAttachmentsFound = false
+            };
+
+            var attachmentArray = new Attachment[] { attachment };
+
+            var result = await EmailTask.SendEmailToExchangeServer(input, attachmentArray, _server, new CancellationToken());
+            Assert.IsTrue(result.EmailSent);
+            File.Delete(filePath);
+            Thread.Sleep(2000); // Give the email some time to get through.
+            await ReadTestEmailWithAttachment(subject);
+            Assert.IsTrue(File.Exists(filePath));
+            File.Delete(filePath);
+            await DeleteMessages(subject);
+        }
+
+        [Test]
+        public async Task SendEmailWithBigFileAttachmentTest()
+        {
+            var subject = "Email test - BigFileAttachment";
+            var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../BigAttachmentFile.txt");
+
+            // Write 9MB file.
+            var stream = new FileStream(filePath, FileMode.CreateNew);
+            stream.Seek(9L * 1024, SeekOrigin.Begin);
+            stream.WriteByte(0);
+            stream.Close();
+
             var input = new ExchangeInput
             {
                 To = _username,
