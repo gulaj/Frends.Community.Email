@@ -202,7 +202,7 @@ namespace Frends.Community.Email
                 return new Output
                 {
                     EmailSent = true,
-                    StatusString = string.Format($"Email sent to: {input.To}")
+                    StatusString = $"Email sent to: {input.To}"
                 };
             }
         }
@@ -238,14 +238,14 @@ namespace Frends.Community.Email
                 else
                     allAttachmentFilePaths = GetAttachmentFiles(attachment.FilePath);
 
-                if (attachment.ThrowExceptionIfAttachmentNotFound && allAttachmentFilePaths.Count == 0) throw new FileNotFoundException(string.Format("The given filepath \"{0}\" had no matching files", attachment.FilePath), attachment.FilePath);
+                if (attachment.ThrowExceptionIfAttachmentNotFound && allAttachmentFilePaths.Count == 0) throw new FileNotFoundException($"The given filepath \"{attachment.FilePath}\" had no matching files");
 
                 if (allAttachmentFilePaths.Count == 0 && !attachment.SendIfNoAttachmentsFound)
                 {
                     return new Output
                     {
                         EmailSent = false,
-                        StatusString = string.Format("No attachments found matching path \"{0}\". No email sent.", attachmentList[0].Name)
+                        StatusString = $"No attachments found matching path \"{attachmentList[0].Name}\". No email sent."
                     };
                 }
 
@@ -288,7 +288,7 @@ namespace Frends.Community.Email
             return new Output
             {
                 EmailSent = true,
-                StatusString = string.Format($"Email sent to: {to}")
+                StatusString = $"Email sent to: {to}"
             };
         }
 
