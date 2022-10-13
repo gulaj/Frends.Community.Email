@@ -51,7 +51,7 @@ namespace Frends.Community.Email
 
                         if (allAttachmentFilePaths.Count == 0 && !attachment.SendIfNoAttachmentsFound)
                         {
-                            output.StatusString = string.Format("No attachments found matching path \"{0}\". No email sent.", attachment.FilePath);
+                            output.StatusString = $"No attachments found matching path \"{attachment.FilePath}\". No email sent.";
                             output.EmailSent = false;
                             return output;
                         }
