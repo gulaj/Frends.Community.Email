@@ -156,7 +156,7 @@ namespace Frends.Community.Email
             var graph = new GraphServiceClient(credentials);
 
             var encoding = GetEncoding(input.MessageEncoding);
-            var bytes = Encoding.Default.GetBytes(input.Message);
+            var bytes = encoding.GetBytes(input.Message);
             var encodedmessage = encoding.GetString(bytes);
 
             var messageBody = new ItemBody

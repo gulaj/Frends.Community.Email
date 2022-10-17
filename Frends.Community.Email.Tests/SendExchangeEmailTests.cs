@@ -149,6 +149,28 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
+        public async Task SendEmailEncodingTest()
+        {
+            var subject = "Email test - ääööåå";
+            var input = new ExchangeInput
+            {
+                To = _username,
+                Message = "Tämä testimaili tuo yöllä ålannista.",
+                IsMessageHtml = false,
+                MessageEncoding = "utf-8",
+                Subject = subject
+            };
+
+            var result = await EmailTask.SendEmailToExchangeServer(input, null, _server, new CancellationToken());
+            Assert.IsTrue(result.EmailSent);
+            Thread.Sleep(2000); // Give the email some time to get through.
+            var email = await ReadTestEmail(subject);
+            Assert.AreEqual("Tämä testimaili tuo yöllä ålannista.", email[0].BodyText);
+            Assert.AreEqual(subject, email[0].Subject);
+            await DeleteMessages(subject);
+        }
+
+        [Test]
         public async Task SendEmailSwitchEncodingTest()
         {
             var subject = "Email test - ASCII";
