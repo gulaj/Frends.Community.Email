@@ -504,7 +504,6 @@ namespace Frends.Community.Email.Tests
                 To = receiver,
                 Message = "This is a test message from Frends.Commmunity.Email Unit Tests.",
                 IsMessageHtml = false,
-                MessageEncoding = "utf-8",
                 Subject = subject
             };
 
@@ -521,7 +520,6 @@ namespace Frends.Community.Email.Tests
                 To = receiver,
                 Message = "This email has a file attachment.",
                 IsMessageHtml = false,
-                MessageEncoding = "utf-8",
                 Subject = subject
             };
 

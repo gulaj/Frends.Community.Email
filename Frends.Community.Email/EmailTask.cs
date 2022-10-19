@@ -155,14 +155,10 @@ namespace Frends.Community.Email
             var credentials = new UsernamePasswordCredential(settings.Username, settings.Password, settings.TenantId, settings.AppId, options);
             var graph = new GraphServiceClient(credentials);
 
-            var encoding = GetEncoding(input.MessageEncoding);
-            var bytes = Encoding.Default.GetBytes(input.Message);
-            var encodedmessage = encoding.GetString(bytes);
-
             var messageBody = new ItemBody
             {
                 ContentType = input.IsMessageHtml ? BodyType.Html : BodyType.Text,
-                Content = encodedmessage
+                Content = input.Message
             };
 
             var recipients = input.To.Split(new char[] { ',', ';'}, StringSplitOptions.RemoveEmptyEntries);

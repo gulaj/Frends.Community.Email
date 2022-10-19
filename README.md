@@ -306,3 +306,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 3.2.0   | ReadEmailFromExchangeServer: Fixed issue where attachments are saved even if the email is not read. Added option to select what should be done if the attachment file exists in destination directory. |
 | 3.2.1   | ReadEmailFromExchangeServer: Fixed issue where user was not able to read attachments from other users mailbox.                                            |
 | 3.2.2   | SendEmailToExchangeServer: Enabled sending bigger files than 3MB as an attachments.                                                                       |
+| 4.0.0   | SendEmailToExchangeServer: Removed encoding-parameter to prevent braking message content.                                                                 |

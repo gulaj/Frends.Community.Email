@@ -49,7 +49,6 @@ namespace Frends.Community.Email.Tests
                 To = _username,
                 Message = message,
                 IsMessageHtml = false,
-                MessageEncoding = "utf-8",
                 Subject = subject
             };
 
@@ -70,7 +69,6 @@ namespace Frends.Community.Email.Tests
                 To = _username + ";" + _username,
                 Message = "This is a test message from Frends.Commmunity.Email Unit Tests.",
                 IsMessageHtml = false,
-                MessageEncoding = "utf-8",
                 Subject = subject
             };
 
@@ -91,7 +89,6 @@ namespace Frends.Community.Email.Tests
                 To = _username + "," + _username,
                 Message = "This is a test message from Frends.Commmunity.Email Unit Tests.",
                 IsMessageHtml = false,
-                MessageEncoding = "utf-8",
                 Subject = subject
             };
 
@@ -113,7 +110,6 @@ namespace Frends.Community.Email.Tests
                 Cc = _username,
                 Message = "This is a test message from Frends.Commmunity.Email Unit Tests.",
                 IsMessageHtml = false,
-                MessageEncoding = "utf-8",
                 Subject = subject
             };
 
@@ -136,7 +132,6 @@ namespace Frends.Community.Email.Tests
                 To = _username,
                 Message = message,
                 IsMessageHtml = true,
-                MessageEncoding = "utf-8",
                 Subject = subject
             };
 
@@ -149,15 +144,14 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task SendEmailSwitchEncodingTest()
+        public async Task SendEmailNordicLettersTest()
         {
-            var subject = "Email test - ASCII";
+            var subject = "Email test - ääööåå";
             var input = new ExchangeInput
             {
                 To = _username,
-                Message = "The letter Ä changes to ?.",
+                Message = "Tämä testimaili tuo yöllä ålannista.",
                 IsMessageHtml = false,
-                MessageEncoding = "ascii",
                 Subject = subject
             };
 
@@ -165,7 +159,8 @@ namespace Frends.Community.Email.Tests
             Assert.IsTrue(result.EmailSent);
             Thread.Sleep(2000); // Give the email some time to get through.
             var email = await ReadTestEmail(subject);
-            Assert.AreEqual("The letter ? changes to ?.", email[0].BodyText);
+            Assert.AreEqual("Tämä testimaili tuo yöllä ålannista.", email[0].BodyText);
+            Assert.AreEqual(subject, email[0].Subject);
             await DeleteMessages(subject);
         }
 
@@ -180,7 +175,6 @@ namespace Frends.Community.Email.Tests
                 To = _username,
                 Message = "This email has a file attachment.",
                 IsMessageHtml = false,
-                MessageEncoding = "utf-8",
                 Subject = subject
             };
 
@@ -221,7 +215,6 @@ namespace Frends.Community.Email.Tests
                 To = _username,
                 Message = "This email has a file attachment.",
                 IsMessageHtml = false,
-                MessageEncoding = "utf-8",
                 Subject = subject
             };
 
@@ -255,7 +248,6 @@ namespace Frends.Community.Email.Tests
                 To = _username,
                 Message = "This email has an attachment written from a string.",
                 IsMessageHtml = false,
-                MessageEncoding = "utf-8",
                 Subject = subject
             };
 
@@ -292,7 +284,6 @@ namespace Frends.Community.Email.Tests
                 To = _username,
                 Message = message,
                 IsMessageHtml = false,
-                MessageEncoding = "utf-8",
                 Subject = subject
             };
 

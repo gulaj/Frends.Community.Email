@@ -101,14 +101,6 @@ namespace Frends.Community.Email
         /// </summary>
         [DefaultValue("false")]
         public bool IsMessageHtml { get; set; }
-
-        /// <summary>
-        /// Encoding of message body and subject.
-        /// Use following table's name column for other options: https://msdn.microsoft.com/en-us/library/system.text.encoding(v=vs.110).aspx#Anchor_5 
-        /// </summary>
-        [DefaultValue("\"utf-8\"")]
-        public string MessageEncoding { get; set; }
-
     }
 
     public class Options
