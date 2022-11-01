@@ -28,7 +28,6 @@
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
 	<PackageReference Include="Azure.Identity" Version="1.6.0" />
     <PackageReference Include="Microsoft.Graph" Version="4.35.0" />
-	<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
   </ItemGroup>
 
 </Project>
