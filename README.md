@@ -101,15 +101,16 @@ Settings for connecting to SMTP server.
 ### Message
 Settings for message properties
 
-| Property         | Type   | Description                                         | Example                 |
-|------------------|--------|-----------------------------------------------------|-------------------------|
-| To               | string | Recipient addresses separated by , or ;.            | jane.doe@somedomain.com |
-| Cc               | string | Cc recipient addresses separated by , or ;.         | jane.doe@somedomain.com |
-| Bcc              | string | Bcc recipient addresses separated by , or ;.        | jane.doe@somedomain.com |
-| Subject          | string | Subject of the message.                             | Hello Jane              |
-| Message          | string | Body of the message.                                | You've got mail!        |
-| Is message html  | bool   | Indicates whether the mail message body is in Html. | false                   |
-| Message encoding | string | Encoding of message body and subject.               | utf-8                   |
+| Property         | Type   | Description                                                                 | Example                 |
+|------------------|--------|-----------------------------------------------------------------------------|-------------------------|
+| To               | string | Recipient addresses separated by , or ;.                                    | jane.doe@somedomain.com |
+| Cc               | string | Cc recipient addresses separated by , or ;.                                 | jane.doe@somedomain.com |
+| Bcc              | string | Bcc recipient addresses separated by , or ;.                                | jane.doe@somedomain.com |
+| From             | string | Email of user which sends the email. If empty, logged in user will be used. | jane.doe@somedomain.com | 
+| Subject          | string | Subject of the message.                                                     | Hello Jane              |
+| Message          | string | Body of the message.                                                        | You've got mail!        |
+| Is message html  | bool   | Indicates whether the mail message body is in Html.                         | false                   |
+| Message encoding | string | Encoding of message body and subject.                                       | utf-8                   |
 
 
 ### Attachments
@@ -307,3 +308,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 3.2.1   | ReadEmailFromExchangeServer: Fixed issue where user was not able to read attachments from other users mailbox.                                            |
 | 3.2.2   | SendEmailToExchangeServer: Enabled sending bigger files than 3MB as an attachments.                                                                       |
 | 4.0.0   | SendEmailToExchangeServer: Removed encoding-parameter to prevent braking message content.                                                                 |
+| 4.1.0   | SendEmailToExchangeServer: Enabled To send emails on behalf of other users.                                                                               |
