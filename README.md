@@ -307,3 +307,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 3.2.1   | ReadEmailFromExchangeServer: Fixed issue where user was not able to read attachments from other users mailbox.                                            |
 | 3.2.2   | SendEmailToExchangeServer: Enabled sending bigger files than 3MB as an attachments.                                                                       |
 | 4.0.0   | SendEmailToExchangeServer: Removed encoding-parameter to prevent braking message content.                                                                 |
+| 4.1.1   | ReadEmailToExchangeServer: Fixed casting issue when reading Item Attachment.                                                                              |

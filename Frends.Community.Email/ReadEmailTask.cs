@@ -306,6 +306,7 @@ namespace Frends.Community.Email
 
         private static string GetFileExtension(string itemType)
         {
+            // Using switch-statement to enable adding more file extensions if necessary.
             switch (itemType)
             {
                 case "#microsoft.graph.message":
