@@ -194,7 +194,10 @@ namespace Frends.Community.Email
                     CcRecipients = cc,
                     BccRecipients = bcc
                 };
-                await graph.Me.SendMail(message, true).Request().PostAsync(cancellationToken);
+                if (string.IsNullOrWhiteSpace(input.From))
+                    await graph.Me.SendMail(message, true).Request().PostAsync(cancellationToken);
+                else
+                    await graph.Users[input.From].SendMail(message, true).Request().PostAsync(cancellationToken);
                 return new Output
                 {
                     EmailSent = true,

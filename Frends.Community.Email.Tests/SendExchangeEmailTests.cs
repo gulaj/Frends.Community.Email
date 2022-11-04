@@ -297,6 +297,28 @@ namespace Frends.Community.Email.Tests
             await DeleteMessages(subject);
         }
 
+        [Test]
+        public async Task SendEmailAsAnotherUserTest()
+        {
+            var subject = "Email test - AnotherUserTest";
+            var message = "This is a test message from Frends.Commmunity.Email Unit Tests.";
+            var input = new ExchangeInput
+            {
+                To = _username,
+                From = "frends_exchange_test_user_2@frends.com",
+                Message = message,
+                IsMessageHtml = false,
+                Subject = subject
+            };
+
+            var result = await EmailTask.SendEmailToExchangeServer(input, null, _server, new CancellationToken());
+            Assert.IsTrue(result.EmailSent);
+            Thread.Sleep(2000); // Give the email some time to get through.
+            var email = await ReadTestEmail(subject);
+            Assert.AreEqual("frends_exchange_test_user_2@frends.com", email[0].From);
+            await DeleteMessages(subject);
+        }
+
         #region HelperMethods
 
         private async Task DeleteMessages(string subject)

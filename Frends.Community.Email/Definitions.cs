@@ -85,6 +85,14 @@ namespace Frends.Community.Email
         public string Bcc { get; set; }
 
         /// <summary>
+        /// Optional.
+        /// Sender email address.
+        /// If left empty, logged in user email address will be used.
+        /// </summary>
+        [DefaultValue("\"jane.doe@somedomain.com\"")]
+        public string From { get; set; }
+
+        /// <summary>
         /// Email message's subject.
         /// </summary>
         [DefaultValue("\"Hello Jane\"")]

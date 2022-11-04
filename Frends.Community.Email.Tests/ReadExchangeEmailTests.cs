@@ -377,7 +377,7 @@ namespace Frends.Community.Email.Tests
         {
             var subject = "Read from other folder";
             await SendTestEmail(subject, _username);
-            await MoveEmailToFolder(subject, "test", _username);
+            await MoveEmailToFolder(subject, "OtherFolder", _username);
             var options = new ExchangeOptions
             {
                 MaxEmails = 1,
@@ -394,7 +394,7 @@ namespace Frends.Community.Email.Tests
                 AppId = _applicationID,
                 Username = _username,
                 Password = _password,
-                MailFolder = "test"
+                MailFolder = "OtherFolder"
             };
 
             var result = await ReadEmailTask.ReadEmailFromExchangeServer(settings, options, new CancellationToken());
