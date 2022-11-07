@@ -10,7 +10,7 @@
     <IncludeSource>true</IncludeSource>
     <PackageTags>Frends</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>4.1.0</Version>
+    <Version>4.1.1</Version>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
   </PropertyGroup>
 
@@ -28,6 +28,7 @@
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
 	<PackageReference Include="Azure.Identity" Version="1.6.0" />
     <PackageReference Include="Microsoft.Graph" Version="4.35.0" />
+	<PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
 
 </Project>

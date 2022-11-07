@@ -13,6 +13,7 @@ using SearchQuery = MailKit.Search.SearchQuery;
 using Directory = System.IO.Directory;
 using Path = System.IO.Path;
 using File = System.IO.File;
+using Newtonsoft.Json.Linq;
 
 namespace Frends.Community.Email
 {
@@ -236,17 +237,49 @@ namespace Frends.Community.Email
 
                 var attachments = await graphServiceClient.Users[user].Messages[email.Id].Attachments.Request().GetAsync(cancellationToken);
 
-                foreach (FileAttachment attachment in attachments.Cast<FileAttachment>())
+                foreach (var attachmentItem in attachments)
                 {
-                    var path = Path.Combine(options.AttachmentSaveDirectory, attachment.Name);
-                    if (File.Exists(path) && options.FileExistsAction == FileExists.Overwrite)
-                        File.Delete(path);
-                    else if (File.Exists(path) && options.FileExistsAction == FileExists.Rename)
-                        path = RenameAttachment(path, options.AttachmentSaveDirectory);
-                    else if (File.Exists(path) && options.FileExistsAction == FileExists.Error)
-                        throw new Exception("Attachment file " + attachment.Name + " already exists in the given directory.");
-                    File.WriteAllBytes(path, attachment.ContentBytes);
-                    attachmentPaths.Add(path);
+                    if (attachmentItem is FileAttachment fileAttachment)
+                    {
+                        var path = Path.Combine(options.AttachmentSaveDirectory, fileAttachment.Name);
+                        if (File.Exists(path) && options.FileExistsAction == FileExists.Overwrite)
+                            File.Delete(path);
+                        else if (File.Exists(path) && options.FileExistsAction == FileExists.Rename)
+                            path = RenameAttachment(path, options.AttachmentSaveDirectory);
+                        else if (File.Exists(path) && options.FileExistsAction == FileExists.Error)
+                            throw new Exception("Attachment file " + fileAttachment.Name + " already exists in the given directory.");
+                        File.WriteAllBytes(path, fileAttachment.ContentBytes);
+                        attachmentPaths.Add(path);
+                    }
+                    else if (attachmentItem is ItemAttachment itemAttachment)
+                    {
+                        var request = graphServiceClient.Me.Messages[email.Id].Attachments[attachmentItem.Id].Request().GetHttpRequestMessage();
+
+                        request.RequestUri = new Uri(request.RequestUri.OriginalString + "/?$expand=microsoft.graph.itemattachment/item");
+                        var response = await graphServiceClient.HttpProvider.SendAsync(request);
+
+                        var message = await response.Content.ReadAsStringAsync();
+                        var data = JObject.Parse(message);
+                        var path = Path.Combine(options.AttachmentSaveDirectory, itemAttachment.Name + GetFileExtension((string)data["item"]["@odata.type"]));
+                        if (File.Exists(path) && options.FileExistsAction == FileExists.Overwrite)
+                            File.Delete(path);
+                        else if (File.Exists(path) && options.FileExistsAction == FileExists.Rename)
+                            path = RenameAttachment(path, options.AttachmentSaveDirectory);
+                        else if (File.Exists(path) && options.FileExistsAction == FileExists.Error)
+                            throw new Exception("Attachment file " + itemAttachment.Name + " already exists in the given directory.");
+
+                        request = graphServiceClient.Me.Messages[email.Id].Attachments[attachmentItem.Id].Request().GetHttpRequestMessage();
+
+                        request.RequestUri = new Uri(request.RequestUri.OriginalString + "/$value");
+                        response = await graphServiceClient.HttpProvider.SendAsync(request);
+
+                        message = await response.Content.ReadAsStringAsync();
+
+                        File.WriteAllText(path, message);
+                        attachmentPaths.Add(path);
+                    }
+                    else
+                        throw new Exception("Uknown attachment type. Please check the attachment.");
                 }
             }
             return attachmentPaths;
@@ -265,6 +298,18 @@ namespace Frends.Community.Email
                 index++;
             }
             return path;
+        }
+
+        private static string GetFileExtension(string itemType)
+        {
+            // Using switch-statement to enable adding more file extensions if necessary.
+            switch (itemType)
+            {
+                case "#microsoft.graph.message":
+                    return ".eml";
+                default:
+                    return "";
+            }
         }
 
         #endregion

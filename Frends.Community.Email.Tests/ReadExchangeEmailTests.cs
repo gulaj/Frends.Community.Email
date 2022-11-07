@@ -276,6 +276,39 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
+        public async Task ReadItemAttachment()
+        {
+            var subject = "Read Item Attachment Test";
+            var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../ItemAttachment/");
+            var options = new ExchangeOptions
+            {
+                MaxEmails = 1,
+                DeleteReadEmails = false,
+                GetOnlyUnreadEmails = false,
+                MarkEmailsAsRead = false,
+                IgnoreAttachments = false,
+                EmailSubjectFilter = subject,
+                AttachmentSaveDirectory = dirPath,
+                FileExistsAction = FileExists.Overwrite
+            };
+
+            var settings = new ExchangeSettings
+            {
+                TenantId = _tenantID,
+                AppId = _applicationID,
+                Username = _username,
+                Password = _password,
+                MailFolder = "ItemAttachment"
+            };
+
+            Directory.CreateDirectory(dirPath);
+            var result = await ReadEmailTask.ReadEmailFromExchangeServer(settings, options, new CancellationToken());
+            Assert.AreEqual(1, result.Count);
+            Assert.IsTrue(File.Exists(result[0].AttachmentSaveDirs[0]));
+            Directory.Delete(dirPath, true);
+        }
+
+        [Test]
         public async Task ReadOtherUsersInbox()
         {
             var subject = "Read From Other User";
