@@ -13,10 +13,6 @@ using SearchQuery = MailKit.Search.SearchQuery;
 using Directory = System.IO.Directory;
 using Path = System.IO.Path;
 using File = System.IO.File;
-using System.Net.Http;
-using MailKit.Search;
-using System.IO;
-using System.Text.Json.Nodes;
 using Newtonsoft.Json.Linq;
 
 namespace Frends.Community.Email
