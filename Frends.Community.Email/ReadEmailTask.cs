@@ -254,33 +254,33 @@ namespace Frends.Community.Email
                     }
                     catch (InvalidCastException)
                     {
-                    ItemAttachment itemAttachment = (ItemAttachment)attachmentItem;
-                    var request = graphServiceClient.Me.Messages[email.Id].Attachments[attachmentItem.Id].Request().GetHttpRequestMessage();
+                        ItemAttachment itemAttachment = (ItemAttachment)attachmentItem;
+                        var request = graphServiceClient.Me.Messages[email.Id].Attachments[attachmentItem.Id].Request().GetHttpRequestMessage();
 
-                    request.RequestUri = new Uri(request.RequestUri.OriginalString + "/?$expand=microsoft.graph.itemattachment/item");
-                    var response = await graphServiceClient.HttpProvider.SendAsync(request);
+                        request.RequestUri = new Uri(request.RequestUri.OriginalString + "/?$expand=microsoft.graph.itemattachment/item");
+                        var response = await graphServiceClient.HttpProvider.SendAsync(request);
 
-                    var message = await response.Content.ReadAsStringAsync();
-                    var data = JObject.Parse(message);
-                    var path = Path.Combine(options.AttachmentSaveDirectory, itemAttachment.Name + GetFileExtension((string)data["item"]["@odata.type"]));
-                    if (File.Exists(path) && options.FileExistsAction == FileExists.Overwrite)
-                        File.Delete(path);
-                    else if (File.Exists(path) && options.FileExistsAction == FileExists.Rename)
-                        path = RenameAttachment(path, options.AttachmentSaveDirectory);
-                    else if (File.Exists(path) && options.FileExistsAction == FileExists.Error)
-                        throw new Exception("Attachment file " + itemAttachment.Name + " already exists in the given directory.");
+                        var message = await response.Content.ReadAsStringAsync();
+                        var data = JObject.Parse(message);
+                        var path = Path.Combine(options.AttachmentSaveDirectory, itemAttachment.Name + GetFileExtension((string)data["item"]["@odata.type"]));
+                        if (File.Exists(path) && options.FileExistsAction == FileExists.Overwrite)
+                            File.Delete(path);
+                        else if (File.Exists(path) && options.FileExistsAction == FileExists.Rename)
+                            path = RenameAttachment(path, options.AttachmentSaveDirectory);
+                        else if (File.Exists(path) && options.FileExistsAction == FileExists.Error)
+                            throw new Exception("Attachment file " + itemAttachment.Name + " already exists in the given directory.");
 
-                    request = graphServiceClient.Me.Messages[email.Id].Attachments[attachmentItem.Id].Request().GetHttpRequestMessage();
+                        request = graphServiceClient.Me.Messages[email.Id].Attachments[attachmentItem.Id].Request().GetHttpRequestMessage();
 
-                    request.RequestUri = new Uri(request.RequestUri.OriginalString + "/$value");
-                    response = await graphServiceClient.HttpProvider.SendAsync(request);
+                        request.RequestUri = new Uri(request.RequestUri.OriginalString + "/$value");
+                        response = await graphServiceClient.HttpProvider.SendAsync(request);
 
-                    message = await response.Content.ReadAsStringAsync();
+                        message = await response.Content.ReadAsStringAsync();
 
-                    File.WriteAllText(path, message);
-                    attachmentPaths.Add(path);
+                        File.WriteAllText(path, message);
+                        attachmentPaths.Add(path);
+                    }
                 }
-            }
             }
             return attachmentPaths;
         }
