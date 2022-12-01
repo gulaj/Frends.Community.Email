@@ -239,8 +239,9 @@ namespace Frends.Community.Email
 
                 foreach (var attachmentItem in attachments)
                 {
-                    if (attachmentItem is FileAttachment fileAttachment)
+                    try
                     {
+                        FileAttachment fileAttachment = (FileAttachment) attachmentItem;
                         var path = Path.Combine(options.AttachmentSaveDirectory, fileAttachment.Name);
                         if (File.Exists(path) && options.FileExistsAction == FileExists.Overwrite)
                             File.Delete(path);
@@ -251,8 +252,9 @@ namespace Frends.Community.Email
                         File.WriteAllBytes(path, fileAttachment.ContentBytes);
                         attachmentPaths.Add(path);
                     }
-                    else if (attachmentItem is ItemAttachment itemAttachment)
+                    catch (InvalidCastException)
                     {
+                        ItemAttachment itemAttachment = (ItemAttachment)attachmentItem;
                         var request = graphServiceClient.Me.Messages[email.Id].Attachments[attachmentItem.Id].Request().GetHttpRequestMessage();
 
                         request.RequestUri = new Uri(request.RequestUri.OriginalString + "/?$expand=microsoft.graph.itemattachment/item");
@@ -278,8 +280,6 @@ namespace Frends.Community.Email
                         File.WriteAllText(path, message);
                         attachmentPaths.Add(path);
                     }
-                    else
-                        throw new Exception("Uknown attachment type. Please check the attachment.");
                 }
             }
             return attachmentPaths;
