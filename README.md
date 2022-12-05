@@ -309,5 +309,6 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 3.2.2   | SendEmailToExchangeServer: Enabled sending bigger files than 3MB as an attachments.                                                                       |
 | 4.0.0   | SendEmailToExchangeServer: Removed encoding-parameter to prevent braking message content.                                                                 |
 | 4.1.0   | SendEmailToExchangeServer: Enabled To send emails on behalf of other users.                                                                               |
-| 4.1.1   | ReadEmailToExchangeServer: Fixed casting issue when reading Item Attachment.                                                                              |
-| 4.1.2   | ReadEmailToExchangeServer: Fixed issue where FileAttachment is not recognized correctly when attachment is fetched.                                       |
+| 4.1.1   | ReadEmailFromExchangeServer: Fixed casting issue when reading Item Attachment.                                                                            |
+| 4.1.2   | ReadEmailFromExchangeServer: Fixed issue where FileAttachment is not recognized correctly when attachment is fetched.                                     |
+| 4.1.3   | ReadEmailFromExchangeServer: Ignore ItemAttachments to prevent failing of the Task if attachment is ItemAttachment instead of FileAttachment.             |

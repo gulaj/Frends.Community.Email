@@ -254,31 +254,10 @@ namespace Frends.Community.Email
                     }
                     catch (InvalidCastException)
                     {
-                        ItemAttachment itemAttachment = (ItemAttachment)attachmentItem;
-                        var request = graphServiceClient.Me.Messages[email.Id].Attachments[attachmentItem.Id].Request().GetHttpRequestMessage();
-
-                        request.RequestUri = new Uri(request.RequestUri.OriginalString + "/?$expand=microsoft.graph.itemattachment/item");
-                        var response = await graphServiceClient.HttpProvider.SendAsync(request);
-
-                        var message = await response.Content.ReadAsStringAsync();
-                        var data = JObject.Parse(message);
-                        var path = Path.Combine(options.AttachmentSaveDirectory, itemAttachment.Name + GetFileExtension((string)data["item"]["@odata.type"]));
-                        if (File.Exists(path) && options.FileExistsAction == FileExists.Overwrite)
-                            File.Delete(path);
-                        else if (File.Exists(path) && options.FileExistsAction == FileExists.Rename)
-                            path = RenameAttachment(path, options.AttachmentSaveDirectory);
-                        else if (File.Exists(path) && options.FileExistsAction == FileExists.Error)
-                            throw new Exception("Attachment file " + itemAttachment.Name + " already exists in the given directory.");
-
-                        request = graphServiceClient.Me.Messages[email.Id].Attachments[attachmentItem.Id].Request().GetHttpRequestMessage();
-
-                        request.RequestUri = new Uri(request.RequestUri.OriginalString + "/$value");
-                        response = await graphServiceClient.HttpProvider.SendAsync(request);
-
-                        message = await response.Content.ReadAsStringAsync();
-
-                        File.WriteAllText(path, message);
-                        attachmentPaths.Add(path);
+                        /*
+                         * Fetch of ItemAttachments can be implemented if it is requested.
+                         * This catch will ignore ItemAttachments to prevent task from failing if the attachment found is ItemAttachment.
+                         */
                     }
                 }
             }
@@ -298,18 +277,6 @@ namespace Frends.Community.Email
                 index++;
             }
             return path;
-        }
-
-        private static string GetFileExtension(string itemType)
-        {
-            // Using switch-statement to enable adding more file extensions if necessary.
-            switch (itemType)
-            {
-                case "#microsoft.graph.message":
-                    return ".eml";
-                default:
-                    return "";
-            }
         }
 
         #endregion

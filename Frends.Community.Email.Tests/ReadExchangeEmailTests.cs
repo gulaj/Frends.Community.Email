@@ -276,7 +276,7 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
-        public async Task ReadItemAttachment()
+        public async Task ItemAttachmentWillNotFailTask()
         {
             var subject = "Read Item Attachment Test";
             var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../ItemAttachment/");
@@ -304,7 +304,7 @@ namespace Frends.Community.Email.Tests
             Directory.CreateDirectory(dirPath);
             var result = await ReadEmailTask.ReadEmailFromExchangeServer(settings, options, new CancellationToken());
             Assert.AreEqual(1, result.Count);
-            Assert.IsTrue(File.Exists(result[0].AttachmentSaveDirs[0]));
+            Assert.AreEqual(0, result[0].AttachmentSaveDirs.Count);
             Directory.Delete(dirPath, true);
         }
 
