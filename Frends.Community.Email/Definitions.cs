@@ -157,6 +157,27 @@ namespace Frends.Community.Email
         [DefaultValue("\"\"")]
         [UIHint(nameof(SkipAuthentication), "", false)]
         public string Password { get; set; }
+
+        /// <summary>
+        ///     Custom headers for email sending.
+        /// </summary>
+        public Header[] CustomHeaders { get; set; }
+    }
+
+    /// <summary>
+    ///     Header class for SendEmail-Task's options.
+    /// </summary>
+    public class Header
+    {
+        /// <summary>
+        ///     Header key.
+        /// </summary>
+        public string Key { get; set; }
+
+        /// <summary>
+        ///     Header value.
+        /// </summary>
+        public string Value { get; set; }
     }
 
     public class ExchangeServer
