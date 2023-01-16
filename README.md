@@ -91,8 +91,8 @@ Settings for connecting to SMTP server.
 
 | Property | Type   | Description                 | Example                   |
 |----------|--------|-----------------------------|---------------------------|
-| Key      | String | Key of the custom header.   | Content-Transfer-Encoding |
-| Value    | String | Value of the custom header. | 7bit                      |
+| Key      | string | Key of the custom header.   | Content-Transfer-Encoding |
+| Value    | string | Value of the custom header. | 7bit                      |
 
 ### Result
 

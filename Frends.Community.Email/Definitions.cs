@@ -159,23 +159,23 @@ namespace Frends.Community.Email
         public string Password { get; set; }
 
         /// <summary>
-        ///     Custom headers for email sending.
+        /// Custom headers for email sending.
         /// </summary>
         public Header[] CustomHeaders { get; set; }
     }
 
     /// <summary>
-    ///     Header class for SendEmail-Task's options.
+    /// Header class for SendEmail-Task's options.
     /// </summary>
     public class Header
     {
         /// <summary>
-        ///     Header key.
+        /// Header key.
         /// </summary>
         public string Key { get; set; }
 
         /// <summary>
-        ///     Header value.
+        /// Header value.
         /// </summary>
         public string Value { get; set; }
     }

@@ -321,8 +321,10 @@ namespace Frends.Community.Email
                 mail.Bcc.Add(MailboxAddress.Parse(bccRecipient));
 
             if (headers != null && headers.Length > 0)
+            {
                 foreach (var header in headers)
                     mail.Headers.Add(header.Key, header.Value);
+            }
 
             return mail;
         }
