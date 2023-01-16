@@ -173,5 +173,23 @@ namespace Frends.Community.Email.Tests
             var result = EmailTask.SendEmail(input, null, _options, new CancellationToken());
             Assert.IsTrue(result.EmailSent);
         }
+
+        [Test]
+        public void SendEmailWithCustomHeaders()
+        {
+            var input = _input;
+            input.Subject = "Email test - CustomHeaders";
+
+            var headers = new Header[]
+            {
+                new Header { Key = "Content-Transfer-Encoding", Value = "7bit" }
+            };
+
+            var options = _options;
+            options.CustomHeaders = headers;
+
+            var result = EmailTask.SendEmail(input, null, options, new CancellationToken());
+            Assert.IsTrue(result.EmailSent);
+        }
     }
 }

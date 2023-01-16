@@ -31,7 +31,7 @@ namespace Frends.Community.Email
         public static Output SendEmail([PropertyTab]Input message, [PropertyTab]Attachment[] attachments, [PropertyTab]Options SMTPSettings, CancellationToken cancellationToken)
         {
             var output = new Output();
-            var mail = CreateMimeMessage(message);
+            var mail = CreateMimeMessage(message, SMTPSettings.CustomHeaders);
 
             if (attachments != null && attachments.Length > 0)
             {
@@ -294,7 +294,7 @@ namespace Frends.Community.Email
         /// <summary>
         /// Create MimeMessage.
         /// </summary>
-        private static MimeMessage CreateMimeMessage([PropertyTab] Input message)
+        private static MimeMessage CreateMimeMessage(Input message, Header[] headers)
         {
             // Split recipients, either by comma or semicolon.
             var separators = new[] { ',', ';' };
@@ -309,13 +309,22 @@ namespace Frends.Community.Email
             mail.Subject = message.Subject;
 
             // Add recipients.
-            foreach (var recipientAddress in recipients) mail.To.Add(MailboxAddress.Parse(recipientAddress));
+            foreach (var recipientAddress in recipients)
+                mail.To.Add(MailboxAddress.Parse(recipientAddress));
 
             // Add CC recipients.
-            foreach (var ccRecipient in ccRecipients) mail.Cc.Add(MailboxAddress.Parse(ccRecipient));
+            foreach (var ccRecipient in ccRecipients)
+                mail.Cc.Add(MailboxAddress.Parse(ccRecipient));
 
             // Add BCC recipients.
-            foreach (var bccRecipient in bccRecipients) mail.Bcc.Add(MailboxAddress.Parse(bccRecipient));
+            foreach (var bccRecipient in bccRecipients)
+                mail.Bcc.Add(MailboxAddress.Parse(bccRecipient));
+
+            if (headers != null && headers.Length > 0)
+            {
+                foreach (var header in headers)
+                    mail.Headers.Add(header.Key, header.Value);
+            }
 
             return mail;
         }

@@ -76,16 +76,23 @@ Settings for included attachments.
 
 Settings for connecting to SMTP server.
 
-| Property           | Type   | Description                                                                                                                                                                 | Example                  |
-|--------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|
-| Smtp server        | string | SMTP server address.                                                                                                                                                        | smtp.somedomain.com      |
-| Port               | int    | SMTP server port.                                                                                                                                                           | 25                       |
-| SecureSocket       | enum   | Choose what SecureSocketOptions to use, default: SecureSocketOptions.Auto                                                                                                   | SecureSocketOptions.None |
-| AcceptAllCerts     | bool   | Accept all certificates when connecting the host, if true, will accept event invalid certificates. If false, will accept self-signed certificates if the root is untrusted. | false                    |
-| SkipAuthentication | bool   | If true, task will not authenticate to the SMTP server.                                                                                                                     | false                    |
-| Username           | string | Use this username to log in to the SMTP server.                                                                                                                             | user                     |
-| Password           | string | Use this password to log in to the SMTP server.                                                                                                                             | password                 |
+| Property           | Type     | Description                                                                                                                                                                 | Example                  |
+|--------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|
+| Smtp server        | string   | SMTP server address.                                                                                                                                                        | smtp.somedomain.com      |
+| Port               | int      | SMTP server port.                                                                                                                                                           | 25                       |
+| SecureSocket       | enum     | Choose what SecureSocketOptions to use, default: SecureSocketOptions.Auto                                                                                                   | SecureSocketOptions.None |
+| AcceptAllCerts     | bool     | Accept all certificates when connecting the host, if true, will accept event invalid certificates. If false, will accept self-signed certificates if the root is untrusted. | false                    |
+| SkipAuthentication | bool     | If true, task will not authenticate to the SMTP server.                                                                                                                     | false                    |
+| Username           | string   | Use this username to log in to the SMTP server.                                                                                                                             | user                     |
+| Password           | string   | Use this password to log in to the SMTP server.                                                                                                                             | password                 |
+| CustomHeaders      | Header[] | Array of custom headers which will be added to sending of email. Can be left empty if no custom headers are needed. See Header.                                             | Check Header             |
 
+### Header
+
+| Property | Type   | Description                 | Example                   |
+|----------|--------|-----------------------------|---------------------------|
+| Key      | string | Key of the custom header.   | Content-Transfer-Encoding |
+| Value    | string | Value of the custom header. | 7bit                      |
 
 ### Result
 
@@ -312,3 +319,4 @@ NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 | 4.1.1   | ReadEmailFromExchangeServer: Fixed casting issue when reading Item Attachment.                                                                            |
 | 4.1.2   | ReadEmailFromExchangeServer: Fixed issue where FileAttachment is not recognized correctly when attachment is fetched.                                     |
 | 4.1.3   | ReadEmailFromExchangeServer: Ignore ItemAttachments to prevent failing of the Task if attachment is ItemAttachment instead of FileAttachment.             |
+| 4.2.0   | SendEmail: Added feature to add custom headers to email sending.                                                                                          |
