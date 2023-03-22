@@ -103,6 +103,30 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
+        public void SendEmailWithByteArrayAttachment()
+        {
+            var input = _input;
+            input.Subject = "Email test - FileAttachment";
+
+            var byteArrayAttachment = new AttachmentFromByteArray
+            {
+                FileBuffer = new byte[16 * 1024],
+                FileName = "fileAttachment.txt",
+            };
+             var attachment = new Attachment()
+             {
+                 AttachmentType = AttachmentType.AttachmentFromByteArray,
+                 ByteArrayAttachment = byteArrayAttachment,
+             };
+
+
+            var Attachments = new Attachment[] { attachment };
+
+            var result = EmailTask.SendEmail(input, Attachments, _options, new CancellationToken());
+            Assert.IsTrue(result.EmailSent);
+        }
+
+        [Test]
         public void SendEmailWithStringAttachment()
         {
             var input = _input;

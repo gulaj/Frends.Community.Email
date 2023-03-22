@@ -199,6 +199,41 @@ namespace Frends.Community.Email.Tests
         }
 
         [Test]
+        public async Task SendEmailWithByteArrayAttachmentTest()
+        {
+            var subject = "Email test - ByteArrayAttachment";
+            var input = new ExchangeInput
+            {
+                To = _username,
+                Message = "This email has a byte array attachment.",
+                IsMessageHtml = false,
+                Subject = subject
+            };
+
+            var byteArrayAttachment = new AttachmentFromByteArray
+            {
+                FileBuffer = new byte[16 * 1024],
+                FileName = "fileAttachment.txt",
+            };
+
+            var attachment = new Attachment
+            {
+                AttachmentType = AttachmentType.AttachmentFromByteArray,
+                ByteArrayAttachment =byteArrayAttachment,
+                ThrowExceptionIfAttachmentNotFound = false,
+                SendIfNoAttachmentsFound = false
+            };
+
+            var attachmentArray = new Attachment[] { attachment };
+
+            var result = await EmailTask.SendEmailToExchangeServer(input, attachmentArray, _server, new CancellationToken());
+            Assert.IsTrue(result.EmailSent);
+            Thread.Sleep(2000); // Give the email some time to get through.
+            await ReadTestEmailWithAttachment(subject);
+            await DeleteMessages(subject);
+        }
+
+        [Test]
         public async Task SendEmailWithBigFileAttachmentTest()
         {
             var subject = "Email test - BigFileAttachment";

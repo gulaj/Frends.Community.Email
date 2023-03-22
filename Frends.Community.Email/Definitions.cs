@@ -221,12 +221,19 @@ namespace Frends.Community.Email
     public class Attachment
     {
         /// <summary>
-        /// Chooses if the attachment file is created from a string or copied from disk.
+        /// Chooses if the attachment file is created from a string, from bute array or copied from disk.
         /// </summary>
         public AttachmentType AttachmentType { get; set; }
 
         [UIHint(nameof(AttachmentType), "", AttachmentType.AttachmentFromString)]
         public AttachmentFromString StringAttachment { get; set; }
+
+        /// <summary>
+        /// Attachment file's buffer
+        /// </summary>
+        [DefaultValue("\"\"")]
+        [UIHint(nameof(AttachmentType), "", AttachmentType.AttachmentFromByteArray)]
+        public AttachmentFromByteArray ByteArrayAttachment { get; set; }
 
         /// <summary>
         /// Attachment file's path
@@ -260,7 +267,14 @@ namespace Frends.Community.Email
         /// <summary>
         /// Select this if the attachment file should be created from a string.
         /// </summary>
-        AttachmentFromString
+        AttachmentFromString,
+
+
+        /// <summary>
+        /// Select this if the attachment file should be created from a byte[].
+        /// </summary>
+        AttachmentFromByteArray
+
     }
 
     public enum SecureSocketOption
@@ -298,6 +312,21 @@ namespace Frends.Community.Email
         /// </summary>
         [DefaultValue("\"\"")]
         public string FileContent { get; set; }
+
+        /// <summary>
+        /// Name of the attachment file.
+        /// </summary>
+        [DefaultValue("\"\"")]
+        public string FileName { get; set; }
+    }
+
+    public class AttachmentFromByteArray
+    {
+        /// <summary>
+        /// Content of the attachment file.
+        /// </summary>
+        [DefaultValue(null)]
+        public byte[] FileBuffer{ get; set; }
 
         /// <summary>
         /// Name of the attachment file.

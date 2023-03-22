@@ -43,35 +43,45 @@ namespace Frends.Community.Email
 
                 foreach (var attachment in attachments)
                 {
-                    if (attachment.AttachmentType == AttachmentType.FileAttachment)
+                    switch (attachment.AttachmentType)
                     {
-                        var allAttachmentFilePaths = GetAttachmentFiles(attachment.FilePath);
+                        case AttachmentType.AttachmentFromString:
+                            // Create attachment only if content is not empty.
+                            if (!string.IsNullOrEmpty(attachment.StringAttachment.FileContent))
+                            {
+                                var path = CreateTemporaryFile(attachment);
+                                builder.Attachments.Add(path);
+                                CleanUpTempWorkDir(path);
+                            }
 
-                        if (attachment.ThrowExceptionIfAttachmentNotFound && allAttachmentFilePaths.Count == 0) throw new FileNotFoundException(string.Format("The given filepath \"{0}\" had no matching files", attachment.FilePath), attachment.FilePath);
+                            break;
+                        case AttachmentType.AttachmentFromByteArray:
+                            if (attachment.ByteArrayAttachment.FileBuffer != null)
+                            {
+                                var path = CreateTemporaryFile(attachment);
+                                builder.Attachments.Add(path);
+                                CleanUpTempWorkDir(path);
+                            }
+                            break;
+                        case AttachmentType.FileAttachment:
+                            var allAttachmentFilePaths = GetAttachmentFiles(attachment.FilePath);
 
-                        if (allAttachmentFilePaths.Count == 0 && !attachment.SendIfNoAttachmentsFound)
-                        {
-                            output.StatusString = $"No attachments found matching path \"{attachment.FilePath}\". No email sent.";
-                            output.EmailSent = false;
-                            return output;
-                        }
+                            if (attachment.ThrowExceptionIfAttachmentNotFound && allAttachmentFilePaths.Count == 0) throw new FileNotFoundException(string.Format("The given filepath \"{0}\" had no matching files", attachment.FilePath), attachment.FilePath);
 
-                        foreach (var filePath in allAttachmentFilePaths)
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-                            builder.Attachments.Add(filePath);
-                        }
-                    }
+                            if (allAttachmentFilePaths.Count == 0 && !attachment.SendIfNoAttachmentsFound)
+                            {
+                                output.StatusString = $"No attachments found matching path \"{attachment.FilePath}\". No email sent.";
+                                output.EmailSent = false;
+                                return output;
+                            }
 
-                    if (attachment.AttachmentType == AttachmentType.AttachmentFromString)
-                    {
-                        // Create attachment only if content is not empty.
-                        if (!string.IsNullOrEmpty(attachment.StringAttachment.FileContent))
-                        {
-                            var path = CreateTemporaryFile(attachment);
-                            builder.Attachments.Add(path);
-                            CleanUpTempWorkDir(path);
-                        }
+                            foreach (var filePath in allAttachmentFilePaths)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                builder.Attachments.Add(filePath);
+                            }
+
+                            break;
                     }
                 }
 
@@ -217,26 +227,37 @@ namespace Frends.Community.Email
             {
 
                 string tempFilePath = "";
-                if (attachment.AttachmentType == AttachmentType.AttachmentFromString)
+                switch (attachment.AttachmentType)
                 {
-                    // Create attachment only if content is not empty.
-                    if (!string.IsNullOrEmpty(attachment.StringAttachment.FileContent))
-                    {
-                        tempFilePath = CreateTemporaryFile(attachment);
-                        var attachmentContent = File.ReadAllBytes(tempFilePath);
-                        var oneAttachment = new FileAttachment
+                    case AttachmentType.AttachmentFromString:
+                        // Create attachment only if content is not empty.
+                        if (!string.IsNullOrEmpty(attachment.StringAttachment.FileContent))
                         {
-                            ODataType = "#microsoft.graph.fileAttachment",
-                            ContentBytes = attachmentContent,
-                            ContentType = MimeTypes.GetMimeType(tempFilePath),
-                            Name = Path.GetFileName(tempFilePath)
-                        };
-                        allAttachmentFilePaths.Add(tempFilePath);
-                    }
-                }
-                else
-                    allAttachmentFilePaths = GetAttachmentFiles(attachment.FilePath);
+                            tempFilePath = CreateTemporaryFile(attachment);
+                            var attachmentContent = File.ReadAllBytes(tempFilePath);
+                            var oneAttachment = new FileAttachment
+                            {
+                                ODataType = "#microsoft.graph.fileAttachment",
+                                ContentBytes = attachmentContent,
+                                ContentType = MimeTypes.GetMimeType(tempFilePath),
+                                Name = Path.GetFileName(tempFilePath)
+                            };
+                            allAttachmentFilePaths.Add(tempFilePath);
+                        }
+                        break;
+                    case AttachmentType.AttachmentFromByteArray:
+                        if (attachment.ByteArrayAttachment.FileBuffer != null)
+                        {
+                            var path = CreateTemporaryFile(attachment);
 
+                            allAttachmentFilePaths.Add(path);
+                        }
+                        break;
+                    case AttachmentType.FileAttachment:
+                        allAttachmentFilePaths = GetAttachmentFiles(attachment.FilePath);
+                        break;
+                }
+       
                 if (attachment.ThrowExceptionIfAttachmentNotFound && allAttachmentFilePaths.Count == 0) throw new FileNotFoundException($"The given filepath \"{attachment.FilePath}\" had no matching files");
 
                 if (allAttachmentFilePaths.Count == 0 && !attachment.SendIfNoAttachmentsFound)
@@ -345,13 +366,23 @@ namespace Frends.Community.Email
         /// Create temp file of attachment from string.
         /// </summary>
         /// <param name="attachment"></param>
-        private static string CreateTemporaryFile(Attachment attachment)
+        private static string CreateTemporaryFile(Attachment attachment) 
         {
             var TempWorkDirBase = InitializeTemporaryWorkPath();
-            var filePath = Path.Combine(TempWorkDirBase, attachment.StringAttachment.FileName);
-            var content = attachment.StringAttachment.FileContent;
+            var filePath = string.Empty;
+            if (attachment.AttachmentType is AttachmentType.AttachmentFromString)
+            {
+                filePath = Path.Combine(TempWorkDirBase, attachment.StringAttachment.FileName);
+                var content = attachment.StringAttachment.FileContent;
 
-            using (var sw = File.CreateText(filePath)) sw.Write(content);
+                using (var sw = File.CreateText(filePath)) sw.Write(content);
+
+            }
+            else if(attachment.AttachmentType is AttachmentType.AttachmentFromByteArray)
+            {
+                filePath = Path.Combine(TempWorkDirBase, attachment.ByteArrayAttachment.FileName);
+                File.WriteAllBytes(filePath, attachment.ByteArrayAttachment.FileBuffer);
+            }   
 
             return filePath;
         }
