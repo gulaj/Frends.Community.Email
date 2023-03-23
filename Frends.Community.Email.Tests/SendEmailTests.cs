@@ -16,12 +16,12 @@ namespace Frends.Community.Email.Tests
     [TestFixture]
     public class SendEmailTests
     {
-        private const string USERNAME = "hiq.frends@gmail.com";
-        private const string PASSWORD = "C0kolwiek!";
-        private const string SMTPADDRESS = "smtp.gmail.com";
-        private const string TOEMAILADDRESS = "hiq.frends@gmail.com";
-        private const string FROMEMAILADDRESS = "hiq.frends@gmail.com";
-        private const int PORT = 465;
+        private const string USERNAME = "test";
+        private const string PASSWORD = "test";
+        private const string SMTPADDRESS = "localhost";
+        private const string TOEMAILADDRESS = "test@test.com";
+        private const string FROMEMAILADDRESS = "user@user.com";
+        private const int PORT = 2525;
         private const bool ACCEPTALLCERTS = true;
         private const string TEMP_ATTACHMENT_SOURCE = "emailtestattachments";
         private const string TEST_FILE_NAME = "testattachment.txt";
@@ -63,7 +63,7 @@ namespace Frends.Community.Email.Tests
                 Port = PORT,
                 SecureSocket = SecureSocketOption.Auto,
                 AcceptAllCerts = ACCEPTALLCERTS,
-                SkipAuthentication = false
+                SkipAuthentication = true
             };
 
         }
@@ -157,7 +157,7 @@ namespace Frends.Community.Email.Tests
             };
             var attachment = new Attachment()
             {
-                AttachmentType = AttachmentType.AttachmentFromBase64String,
+                AttachmentType = AttachmentType.at,
                 Base64StringAttachment = base64StringAttachment,
             };
 
