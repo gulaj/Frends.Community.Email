@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.IO;
 using System.Threading;
 
@@ -15,12 +16,12 @@ namespace Frends.Community.Email.Tests
     [TestFixture]
     public class SendEmailTests
     {
-        private const string USERNAME = "test";
-        private const string PASSWORD = "test";
-        private const string SMTPADDRESS = "localhost";
-        private const string TOEMAILADDRESS = "test@test.com";
-        private const string FROMEMAILADDRESS = "user@user.com";
-        private const int PORT = 2525;
+        private const string USERNAME = "hiq.frends@gmail.com";
+        private const string PASSWORD = "C0kolwiek!";
+        private const string SMTPADDRESS = "smtp.gmail.com";
+        private const string TOEMAILADDRESS = "hiq.frends@gmail.com";
+        private const string FROMEMAILADDRESS = "hiq.frends@gmail.com";
+        private const int PORT = 465;
         private const bool ACCEPTALLCERTS = true;
         private const string TEMP_ATTACHMENT_SOURCE = "emailtestattachments";
         private const string TEST_FILE_NAME = "testattachment.txt";
@@ -62,7 +63,7 @@ namespace Frends.Community.Email.Tests
                 Port = PORT,
                 SecureSocket = SecureSocketOption.Auto,
                 AcceptAllCerts = ACCEPTALLCERTS,
-                SkipAuthentication = true
+                SkipAuthentication = false
             };
 
         }
@@ -138,6 +139,30 @@ namespace Frends.Community.Email.Tests
                 StringAttachment = fileAttachment
             };
             var Attachments = new Attachment[] { attachment};
+
+            var result = EmailTask.SendEmail(input, Attachments, _options, new CancellationToken());
+            Assert.IsTrue(result.EmailSent);
+        }
+
+        [Test]
+        public void SendEmailWithBase64StringAttachment()
+        {
+            var input = _input;
+            input.Subject = "Email test - Base64StringAttachment";
+
+            var base64StringAttachment = new AttachmentFromBase64String
+            {
+                Content = Convert.ToBase64String(new byte[16 * 1024]),
+                FileName = "fileAttachment.txt",
+            };
+            var attachment = new Attachment()
+            {
+                AttachmentType = AttachmentType.AttachmentFromBase64String,
+                Base64StringAttachment = base64StringAttachment,
+            };
+
+
+            var Attachments = new Attachment[] { attachment };
 
             var result = EmailTask.SendEmail(input, Attachments, _options, new CancellationToken());
             Assert.IsTrue(result.EmailSent);

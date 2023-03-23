@@ -63,6 +63,14 @@ namespace Frends.Community.Email
                                 CleanUpTempWorkDir(path);
                             }
                             break;
+                        case AttachmentType.AttachmentFromBase64String:
+                            if (!string.IsNullOrWhiteSpace( attachment.Base64StringAttachment.Content))
+                            {
+                                var path = CreateTemporaryFile(attachment);
+                                builder.Attachments.Add(path);
+                                CleanUpTempWorkDir(path);
+                            }
+                            break;
                         case AttachmentType.FileAttachment:
                             var allAttachmentFilePaths = GetAttachmentFiles(attachment.FilePath);
 
@@ -74,7 +82,6 @@ namespace Frends.Community.Email
                                 output.EmailSent = false;
                                 return output;
                             }
-
                             foreach (var filePath in allAttachmentFilePaths)
                             {
                                 cancellationToken.ThrowIfCancellationRequested();
@@ -253,6 +260,14 @@ namespace Frends.Community.Email
                             allAttachmentFilePaths.Add(path);
                         }
                         break;
+                    case AttachmentType.AttachmentFromBase64String:
+                        if (!string.IsNullOrWhiteSpace(attachment.Base64StringAttachment.Content))
+                        {
+                            var path = CreateTemporaryFile(attachment);
+
+                            allAttachmentFilePaths.Add(path);
+                        }
+                        break;
                     case AttachmentType.FileAttachment:
                         allAttachmentFilePaths = GetAttachmentFiles(attachment.FilePath);
                         break;
@@ -370,19 +385,22 @@ namespace Frends.Community.Email
         {
             var TempWorkDirBase = InitializeTemporaryWorkPath();
             var filePath = string.Empty;
-            if (attachment.AttachmentType is AttachmentType.AttachmentFromString)
+            switch (attachment.AttachmentType)
             {
-                filePath = Path.Combine(TempWorkDirBase, attachment.StringAttachment.FileName);
-                var content = attachment.StringAttachment.FileContent;
-
-                using (var sw = File.CreateText(filePath)) sw.Write(content);
-
+                case AttachmentType.AttachmentFromByteArray:
+                    filePath = Path.Combine(TempWorkDirBase, attachment.ByteArrayAttachment.FileName);
+                    File.WriteAllBytes(filePath, attachment.ByteArrayAttachment.FileBuffer);
+                    break;
+                case AttachmentType.AttachmentFromBase64String:
+                    filePath = Path.Combine(TempWorkDirBase, attachment.Base64StringAttachment.FileName);
+                    File.WriteAllBytes(filePath, Convert.FromBase64String(attachment.Base64StringAttachment.Content));
+                    break;
+                case AttachmentType.AttachmentFromString:
+                    filePath = Path.Combine(TempWorkDirBase, attachment.StringAttachment.FileName);
+                    var content = attachment.StringAttachment.FileContent;
+                    using (var sw = File.CreateText(filePath)) sw.Write(content);
+                    break;
             }
-            else if(attachment.AttachmentType is AttachmentType.AttachmentFromByteArray)
-            {
-                filePath = Path.Combine(TempWorkDirBase, attachment.ByteArrayAttachment.FileName);
-                File.WriteAllBytes(filePath, attachment.ByteArrayAttachment.FileBuffer);
-            }   
 
             return filePath;
         }

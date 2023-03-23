@@ -236,6 +236,13 @@ namespace Frends.Community.Email
         public AttachmentFromByteArray ByteArrayAttachment { get; set; }
 
         /// <summary>
+        /// Attachment file's base64 string
+        /// </summary>
+        [DefaultValue("\"\"")]
+        [UIHint(nameof(AttachmentType), "", AttachmentType.AttachmentFromBase64String)]
+        public AttachmentFromBase64String Base64StringAttachment{ get; set; }
+
+        /// <summary>
         /// Attachment file's path
         /// Uses Directory.GetFiles(string, string) as a pattern matching technique.
         /// See https://msdn.microsoft.com/en-us/library/wz42302f(v=vs.110).aspx.
@@ -273,7 +280,12 @@ namespace Frends.Community.Email
         /// <summary>
         /// Select this if the attachment file should be created from a byte[].
         /// </summary>
-        AttachmentFromByteArray
+        AttachmentFromByteArray,
+
+        /// <summary>
+        /// Select this if the attachment file should be created from a byte[].
+        /// </summary>
+        AttachmentFromBase64String
 
     }
 
@@ -327,6 +339,21 @@ namespace Frends.Community.Email
         /// </summary>
         [DefaultValue(null)]
         public byte[] FileBuffer{ get; set; }
+
+        /// <summary>
+        /// Name of the attachment file.
+        /// </summary>
+        [DefaultValue("\"\"")]
+        public string FileName { get; set; }
+    }
+
+    public class AttachmentFromBase64String
+    {
+        /// <summary>
+        /// Content of the attachment file.
+        /// </summary>
+        [DefaultValue(null)]
+        public string Content { get; set; }
 
         /// <summary>
         /// Name of the attachment file.
